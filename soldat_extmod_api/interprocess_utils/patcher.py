@@ -18,9 +18,6 @@ class Patcher:
         self.game_addresses["RtlExitUserThread"] = ntdll_base + rtexu_offset
         self.game_addresses["Memcpy"] = ntdll_base + memcpy_offset
         self.game_addresses["VirtualAlloc"] = kernel32_base + virtualalloc_offset
-        # self.game_addresses["RIhookContinue"] = self.game_addresses["RenderInterface"] + 0x8
-        # self.game_addresses["AlphaHookContinue"] = self.game_addresses["TransparencyUpdater"] + 0x7
-        # self.game_addresses["ColHookContinue"] = self.game_addresses["CollisionCheck"] + 0x6
         self.assembler.set_symbol_table(self.game_addresses)
 
 

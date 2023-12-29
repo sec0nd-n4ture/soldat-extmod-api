@@ -58,9 +58,6 @@ class Player:
         return self.soldat_bridge.read(self.first_keystates_addr, 4)
     
     def set_first_keystates(self, keystates: bytes):
-        # assert(len(keystates) == 4)
-        if len(keystates) != 4:
-            print(len(keystates))
         self.soldat_bridge.write(self.first_keystates_addr, keystates)
     
     def get_second_keystates(self) -> bytes:

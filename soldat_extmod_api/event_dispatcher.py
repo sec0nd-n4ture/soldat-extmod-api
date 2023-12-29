@@ -148,8 +148,6 @@ class EventDispatcher:
                             if checkpoint.previous.active:
                                 self.__dispatch(Event.RUN_FINISH)
                         break
-                    # elif self.player_collide and not col_state:
-                    #     self.__dispatch(Event.PLAYER_COLLIDE_EXIT, rect.number)
         if Event.DIRECTX_READY in self.callbacks or Event.DIRECTX_NOT_READY in self.callbacks:
             directx_state = bool.from_bytes(self.soldat_bridge.read(self.addr_directx_ready, 1), "little")
             if directx_state != self.directx_state and directx_state == True:
