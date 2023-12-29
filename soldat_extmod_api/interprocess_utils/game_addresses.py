@@ -36,7 +36,8 @@ addresses = {
             "TSprite.Respawn": 0x005BB5B0,
             "dimousestate2": 0x00624B48,
             "tpolymap": 0x0061F78C,
-            "TPolyMap.RayCast": 0x0060D59C
+            "TPolyMap.RayCast": 0x0060D59C,
+            "Vector2": 0x004822E0
         },
     1: { # 1.7.1 to be populated later
             "GfxCreateTexture": 0x0050919C,

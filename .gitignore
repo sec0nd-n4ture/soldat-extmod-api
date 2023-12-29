@@ -1,8 +1,10 @@
 __pycache__/
 *.pyc
+*_test.py
 
 .vscode/
 .idea/
 *.pyc
 
 *.log
+*.png
