@@ -112,6 +112,9 @@ class ModAPI(metaclass=Singleton):
                 player=False, flag=False, bullet=True, check_collider=False, team = b"\x00") -> MapManager.RaycastResult:
         return MapManager.raycast(self, a, b, distance, max_distance, player, flag, bullet, check_collider, team)
     
+    def collision_test(self, pos: Vector2D, perp_vec: Vector2D, is_flag : bool = False) -> MapManager.CollisionResult:
+        return MapManager.collision_test(self, pos, perp_vec, is_flag)
+
     # ======== Player related methods
 
     def get_player(self, id: int) -> Player:

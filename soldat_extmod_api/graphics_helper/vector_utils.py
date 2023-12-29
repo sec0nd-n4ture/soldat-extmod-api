@@ -34,8 +34,8 @@ class Vector2D:
     def sub(self, v):
         return Vector2D(self.x - v.x, self.y - v.y)
 
-    def to_bytes(self):
-        return pack("ff",self.x, self.y)
+    def to_bytes(self, endianness: str = "<"):
+        return pack(endianness+"ff",self.x, self.y)
     
     def __neg__(self):
         return Vector2D(-self.x, -self.y)

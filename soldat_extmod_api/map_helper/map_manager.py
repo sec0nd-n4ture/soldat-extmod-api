@@ -13,6 +13,17 @@ class MapManager:
         def from_bytes(cls, result_bytes: bytes):
             return cls(hit_result=bool.from_bytes(result_bytes[0:1], byteorder="little"),
                        distance=struct.unpack("f", result_bytes[1:5])[0])
+        
+    class CollisionResult:
+        def __init__(self, result: bool, perp_vec: Vector2D):
+            self.result = result
+            self.perp_vec = perp_vec
+
+        @classmethod
+        def from_bytes(cls, result_bytes: bytes):
+            return cls(result=bool.from_bytes(result_bytes[:1], byteorder="little"),
+                       perp_vec=Vector2D.from_bytes(result_bytes[1:]))
+
 
     @staticmethod
     def raycast(mod_api, a: Vector2D, b: Vector2D, distance: float, max_distance: float, 
@@ -26,8 +37,8 @@ class MapManager:
             b_ptr = mem_block+8
             distance_ptr = mem_block+16
             raycast_result_ptr = mem_block+24
-            a_bytes = a.to_bytes()
-            b_bytes = b.to_bytes()
+            a_bytes = a.to_bytes(endianness=">")
+            b_bytes = b.to_bytes(endianness=">")
 
             soldat_bridge.write(distance_ptr, struct.pack(">f", distance))
 
@@ -69,3 +80,43 @@ class MapManager:
             soldat_bridge.free_memory(mem_block)
 
             return MapManager.RaycastResult.from_bytes(result_bytes)
+        
+    @staticmethod
+    def collision_test(mod_api, pos: Vector2D, is_flag: bool = False) -> CollisionResult:
+        soldat_bridge = mod_api.soldat_bridge
+        assembler = mod_api.assembler
+        mem_block: int = soldat_bridge.allocate_memory(32, MEM_COMMIT, PAGE_READWRITE)
+        if mem_block:
+            pos_bytes = pos.to_bytes(endianness=">")
+            pos_ptr = mem_block
+            perp_ptr = mem_block+8
+            col_res_ptr = mem_block+16
+
+            code = f"""
+            sub esp, 0x2C
+            push 0x{pos_bytes[:4].hex()}
+            push 0x{pos_bytes[4:].hex()}
+            mov eax, 0x{pos_ptr.to_bytes(4, "big").hex()}
+            call Vector2
+            push 0x{is_flag.to_bytes().hex()}
+            mov edx, 0x{pos_ptr.to_bytes(4, "big").hex()}
+            mov ecx, 0x{perp_ptr.to_bytes(4, "big").hex()}
+            mov eax, dword ptr ds:[tpolymap]
+            call TPolyMap.CollisionTest
+            mov byte ptr ds:[0x{col_res_ptr.to_bytes(4, "big").hex()}], al
+            xor eax, eax
+            call RtlExitUserThread
+            """
+
+            _dummy_assembly = assembler.assemble(code, 0)
+            code_addr = soldat_bridge.allocate_memory(len(_dummy_assembly), MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READ)
+            code_assembled = assembler.assemble(code, code_addr)
+            soldat_bridge.write(code_addr, code_assembled)
+            soldat_bridge.execute(code_addr, None, True)
+
+            result_bytes = soldat_bridge.read(col_res_ptr, 1)
+            result_bytes += soldat_bridge.read(perp_ptr, 8) 
+
+            soldat_bridge.free_memory(mem_block)
+
+            return MapManager.CollisionResult.from_bytes(result_bytes)
