@@ -28,6 +28,15 @@ class Vector2D:
                 ret = False
         return ret
     
+    def __add__(self, other):
+        return Vector2D(self.x + other.x, self.y + other.y)
+
+    def __sub__(self, other):
+        return Vector2D(self.x - other.x, self.y - other.y)
+
+    def __iadd__(self, other):
+        return Vector2D(self.x + other.x, self.y + other.y)
+
     def add(self, v):
         return Vector2D(self.x + v.x, self.y + v.y)
     
@@ -76,6 +85,15 @@ class Vector2Ds:
                 ret = False
         return ret
     
+    def __add__(self, other):
+        return Vector2Ds(self.x + other.x, self.y + other.y)
+
+    def __sub__(self, other):
+        return Vector2Ds(self.x - other.x, self.y - other.y)
+
+    def __iadd__(self, other):
+        return Vector2Ds(self.x + other.x, self.y + other.y)
+
     def add(self, v):
         return Vector2Ds(self.x + v.x, self.y + v.y)
     
@@ -121,6 +139,15 @@ class Vector3D:
                 ret = False
         return ret
     
+    def __add__(self, other):
+        return Vector3D(self.x + other.x, self.y + other.y, self.z + other.z)
+
+    def __sub__(self, other):
+        return Vector3D(self.x - other.x, self.y - other.y, self.z + other.z)
+
+    def __iadd__(self, other):
+        return Vector3D(self.x + other.x, self.y + other.y, self.z + other.z)
+
     def add(self, v):
         return Vector3D(self.x + v.x, self.y + v.y, self.z + v.z)
     
