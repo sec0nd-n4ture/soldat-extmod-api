@@ -13,6 +13,8 @@ from soldat_extmod_api.graphics_helper.sm_text import InterfaceText, WorldText, 
 from soldat_extmod_api.player_helper.player import Player
 from soldat_extmod_api.interprocess_utils.game_addresses import addresses
 from soldat_extmod_api.event_dispatcher import Event, EventDispatcher, Callable
+from soldat_extmod_api.graphics_helper.gui_addon import Frame
+
 
 class ModAPI(metaclass=Singleton):
     def __init__(self) -> None:
@@ -31,6 +33,7 @@ class ModAPI(metaclass=Singleton):
         self.graphics_manager = GraphicsManager(self)
         self.event_dispatcher = EventDispatcher(self)
         self.event_dispatcher.set_own_player(self.get_player(self.get_own_id()))
+        self.frame = Frame()
     
     # ======== Graphics related methods
 
@@ -106,14 +109,19 @@ class ModAPI(metaclass=Singleton):
         '''
         self.graphics_manager.DisableDrawing()
 
+    # ======== GUI methods
+    
+    def get_gui_frame(self) -> Frame:
+        return self.frame
+
     # ======== Map related methods
 
     def raycast(self, a: Vector2D, b: Vector2D, distance: float, max_distance: float, 
                 player=False, flag=False, bullet=True, check_collider=False, team = b"\x00") -> MapManager.RaycastResult:
         return MapManager.raycast(self, a, b, distance, max_distance, player, flag, bullet, check_collider, team)
     
-    def collision_test(self, pos: Vector2D, perp_vec: Vector2D, is_flag : bool = False) -> MapManager.CollisionResult:
-        return MapManager.collision_test(self, pos, perp_vec, is_flag)
+    def collision_test(self, pos: Vector2D, is_flag : bool = False) -> MapManager.CollisionResult:
+        return MapManager.collision_test(self, pos, is_flag)
 
     # ======== Player related methods
 
