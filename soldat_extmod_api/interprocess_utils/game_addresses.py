@@ -38,7 +38,18 @@ addresses = {
             "tpolymap": 0x0061F78C,
             "TPolyMap.RayCast": 0x0060D59C,
             "Vector2": 0x004822E0,
-            "TPolyMap.CollisionTest": 0x0060D2A4
+            "TPolyMap.CollisionTest": 0x0060D2A4,
+            "cam_restore_xptr": 0x0061E7C0,
+            "cam_restore_yptr": 0x0061E60C,
+            "cam_misc_1": 0x0056EC28,
+            "cam_misc_2": 0x0056EC32,
+            "cam_misc_3": 0x006042C6,
+            "cam_misc_4": 0x006042D2,
+            "cam_misc_5": 0x00604316,
+            "cam_misc_6": 0x00604326,
+            "cam_misc_7": 0x0060433C,
+            "cam_misc_8": 0x00604934,
+            "cam_misc_9": 0x00604942
         },
     1: { # 1.7.1 to be populated later
             "GfxCreateTexture": 0x0050919C,

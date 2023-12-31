@@ -14,6 +14,7 @@ from soldat_extmod_api.player_helper.player import Player
 from soldat_extmod_api.interprocess_utils.game_addresses import addresses
 from soldat_extmod_api.event_dispatcher import Event, EventDispatcher, Callable
 from soldat_extmod_api.graphics_helper.gui_addon import Frame
+from soldat_extmod_api.camera_helper.camera_manager import CameraManager
 
 
 class ModAPI(metaclass=Singleton):
@@ -23,7 +24,7 @@ class ModAPI(metaclass=Singleton):
             exit(1)
         
         self._exec_hash = self.soldat_bridge.executable_hash
-        self.addresses = addresses[self._exec_hash].copy()
+        self.addresses: dict[str, int] = addresses[self._exec_hash].copy()
         self.addr_mouse_screen_pos = self.addresses["cursor_screen_pos"]
         self.assembler = assembler.Assembler()
         self.patcher: patcher.Patcher = patcher.Patcher(self)
@@ -34,6 +35,7 @@ class ModAPI(metaclass=Singleton):
         self.event_dispatcher = EventDispatcher(self)
         self.event_dispatcher.set_own_player(self.get_player(self.get_own_id()))
         self.frame = Frame()
+        self.camera_manager = CameraManager(self)
     
     # ======== Graphics related methods
 
@@ -148,3 +150,20 @@ class ModAPI(metaclass=Singleton):
 
     def tick_event_dispatcher(self):
         self.event_dispatcher.observe()
+
+    # ======== Camera related methods
+        
+    def take_camera_controls(self):
+        self.camera_manager.take_camera_controls()
+
+    def restore_camera_controls(self):
+        self.camera_manager.restore_camera_controls()
+
+    def take_cursor_controls(self):
+        self.camera_manager.take_cursor_controls()
+
+    def restore_cursor_controls(self):
+        self.camera_manager.restore_cursor_controls()
+
+    def set_camera_position(self, position: Vector2D):
+        self.camera_manager.set_cam_pos(position)
