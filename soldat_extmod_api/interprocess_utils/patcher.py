@@ -1,5 +1,5 @@
 from game_addresses import addresses
-from win32con import MEM_COMMIT, MEM_RESERVE, PAGE_EXECUTE_READWRITE
+from win32.lib.win32con import MEM_COMMIT, MEM_RESERVE, PAGE_EXECUTE_READWRITE
 
 
 class Patcher:

@@ -1,5 +1,5 @@
 addresses = {
-    3712077237: { # 1.7.1.1 local build
+    3712077237: { # 1.7.1.1 local build optimization off
             "GfxCreateTexture": 0x005178A4,
             "RenderInterface": 0x005F51C8,
             "GfxDrawSprite": 0x0051848C,
@@ -8,7 +8,7 @@ addresses = {
             "SetFontStyle": 0x00605D24,
             "GfxTextScale": 0x00519C34,
             "GfxDrawText": 0x00519FAC,
-            "ifacebyte": b"\x3D",
+            "ifacebyte": 0x3D,
             "Stbi_load_from_memory": 0x1470, # offset
             "camera_world_pos_x": 0x00907014,
             "camera_world_pos_y": 0x00907018,
@@ -51,11 +51,49 @@ addresses = {
             "cam_misc_8": 0x00604934,
             "cam_misc_9": 0x00604942
         },
-    1: { # 1.7.1 to be populated later
+    1802620099: { # 1.7.1 https://static.soldat.pl/downloads/soldat171.zip
             "GfxCreateTexture": 0x0050919C,
             "RenderInterface": 0x005BD628,
-            "GfxDrawSprite": 0x00509974, # change to other overload
-            "ifacebyte": b"\x40",
+            "GfxDrawSprite": 0x00509B0C,
+            "GfxTextColor": 0x0050AEE4,
+            "GfxTextShadow": 0x0050AEF4,
+            "SetFontStyle": 0x005CD6B8,
+            "GfxTextScale": 0x0050AED4,
+            "GfxDrawText": 0x0050B1D8,
+            "ifacebyte": 0x40,
+            "Stbi_load_from_memory": 0x1470, # offset
+            "camera_world_pos_x": 0x008CBFE8,
+            "camera_world_pos_y": 0x008CBFEC,
+            "cursor_screen_pos": 0x005EC370,
+            "cursor_x_setter": 0x005492E5,
+            "cursor_y_setter": 0x005492F4,
+            "game_width_half": 0x005E45D0,
+            "game_height_half": 0x005E4594,
+            "dxready": 0x005E1714,
+            "CreateSprite": 0x005458F4,
+            "CollisionCheck": 0x00593934,
+            "TransparencyUpdater": 0x00583C57,
+            "FormKeyPress": 0x0055C7F0,
+            "player_base": 0x008CBFF4,
+            "player_sprite_base": 0x007676E0,
+            "chat_show_flag": 0x00545406,
+            "TSprite.Respawn": 0x00589754,
+            "dimousestate2": 0x005E9B24,
+            "TPolyMap.RayCast": 0x005D437C,
+            "TPolyMap.CollisionTest": 0x005D40F8,
+            "Vector2": 0x00482974,
+            "tpolymap": 0x0077D2FC,
+            "cam_restore_xptr": 0x005E3E90,
+            "cam_restore_yptr": 0x005E3CE0,
+            "cam_misc_1": 0x00544BE8,
+            "cam_misc_2": 0x00544BF2,
+            "cam_misc_3": 0x005CC006,
+            "cam_misc_4": 0x005CC012,
+            "cam_misc_5": 0x005CC056,
+            "cam_misc_6": 0x005CC066,
+            "cam_misc_7": 0x005CC07C,
+            "cam_misc_8": 0x005CC4F5,
+            "cam_misc_9": 0x005CC503,
             "own_id": 0x00660800
         }
 }

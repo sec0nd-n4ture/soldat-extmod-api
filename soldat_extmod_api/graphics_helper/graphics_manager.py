@@ -1,5 +1,5 @@
 from soldat_extmod_api.game_structs.gfx_structs import ImageData, ImageDataCache
-from win32con import MEM_COMMIT, MEM_RESERVE, PAGE_EXECUTE_READWRITE, PAGE_READWRITE
+from win32.lib.win32con import MEM_COMMIT, MEM_RESERVE, PAGE_EXECUTE_READWRITE, PAGE_READWRITE
 from struct import unpack
 import time
 

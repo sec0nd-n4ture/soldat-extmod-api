@@ -15,14 +15,22 @@ from soldat_extmod_api.interprocess_utils.game_addresses import addresses
 from soldat_extmod_api.event_dispatcher import Event, EventDispatcher, Callable
 from soldat_extmod_api.graphics_helper.gui_addon import Frame
 from soldat_extmod_api.camera_helper.camera_manager import CameraManager
+import logging
 
+logging.basicConfig(
+    level=logging.DEBUG,
+    format='%(asctime)s %(levelname)s %(message)s',
+    handlers=[logging.StreamHandler()]
+)
 
 class ModAPI(metaclass=Singleton):
     def __init__(self) -> None:
         self.soldat_bridge = SoldatBridge()
         if self.soldat_bridge.pid == 0:
             exit(1)
-        
+        if self.soldat_bridge.executable_hash not in addresses.keys():
+            logging.error(f"Unsupported Soldat version. Version hash: {self.soldat_bridge.executable_hash}")
+            exit(1)
         self._exec_hash = self.soldat_bridge.executable_hash
         self.addresses: dict[str, int] = addresses[self._exec_hash].copy()
         self.addr_mouse_screen_pos = self.addresses["cursor_screen_pos"]

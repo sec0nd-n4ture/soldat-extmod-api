@@ -1,6 +1,6 @@
 from struct import unpack
 from soldat_extmod_api.game_structs.gfx_structs import ImageData, TGfxRect, TGfxSprite
-from win32con import MEM_COMMIT, MEM_RESERVE, PAGE_READWRITE
+from win32.lib.win32con import MEM_COMMIT, MEM_RESERVE, PAGE_READWRITE
 from vector_utils import Vector2D, Vector3D
 from color import Color, WHITE
 

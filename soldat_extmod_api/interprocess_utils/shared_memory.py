@@ -1,4 +1,4 @@
-from win32con import MEM_COMMIT, MEM_RESERVE, PAGE_READWRITE
+from win32.lib.win32con import MEM_COMMIT, MEM_RESERVE, PAGE_READWRITE
 import json
 
 SERIAL_FILE_NAME = "sharedmemory.json"

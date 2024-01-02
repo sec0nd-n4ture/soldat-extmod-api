@@ -1,5 +1,5 @@
 from struct import pack
-from win32con import MEM_COMMIT, MEM_RESERVE, PAGE_READWRITE
+from win32.lib.win32con import MEM_COMMIT, MEM_RESERVE, PAGE_READWRITE
 from vector_utils import Vector2D
 from color import Color
 

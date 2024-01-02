@@ -12,7 +12,7 @@ exit_restore:
 exit_norestore:
     push ebp
     mov ebp, esp
-    mov ecx, 0x3D
+    mov ecx, ifacebyte
     xor eax, eax
     mov byte ptr ds:[flag_texture_func], al
     jmp RIhookContinue

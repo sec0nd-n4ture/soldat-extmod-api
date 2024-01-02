@@ -1,6 +1,6 @@
 import os
 from struct import pack
-from win32con import MEM_COMMIT, MEM_RESERVE, PAGE_READWRITE
+from win32.lib.win32con import MEM_COMMIT, MEM_RESERVE, PAGE_READWRITE
 from soldat_extmod_api.interprocess_utils.game_addresses import addresses
 from soldat_extmod_api.interprocess_utils.branch_controller import BranchController
 from soldat_extmod_api.interprocess_utils.shared_memory import SharedMemory
@@ -27,6 +27,7 @@ class GraphicsPatcher:
         self.assembler.add_to_symbol_table("ptr_text_count", self.text_addresses)
         self.assembler.add_to_symbol_table("ptr_text_array", self.text_addresses + 0x4)
         self.assembler.add_to_symbol_table("RIhookContinue", addresses[self.soldat_bridge.executable_hash]["RenderInterface"] + 0x8)
+        self.assembler.add_to_symbol_table("FormKeyPressContinue", addresses[self.soldat_bridge.executable_hash]["FormKeyPress"] + 0x7)
 
     @property
     def check_patch(self):

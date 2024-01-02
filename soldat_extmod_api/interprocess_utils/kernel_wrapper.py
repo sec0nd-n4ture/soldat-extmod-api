@@ -1,5 +1,5 @@
 import win32api
-import win32con
+import win32.lib.win32con as win32con
 import ctypes
 from ctypes.wintypes import BOOL, HWND,LPDWORD,\
                             DWORD, HANDLE,LPVOID,\

@@ -4,19 +4,13 @@ from kernel_wrapper import FindWindow, OpenProcess, GetPid, VirtualFreeEx,\
                     GetModuleFileNameExW, EnumProcessModulesEx, GetModuleInformation,\
                     MODULEINFO, GetProcAddress
 from ctypes import c_void_p, byref, c_ulong, create_string_buffer, create_unicode_buffer, c_size_t, sizeof, POINTER
-from win32con import MEM_COMMIT, MEM_RESERVE, PAGE_EXECUTE_READ, PAGE_READWRITE, MEM_RELEASE
+from win32.lib.win32con import MEM_COMMIT, MEM_RESERVE, PAGE_EXECUTE_READ, PAGE_READWRITE, MEM_RELEASE
 import pefile
 import win32event
 import logging
 import time
 from zlib import crc32
 
-
-logging.basicConfig(
-    level=logging.DEBUG,
-    format='%(asctime)s %(levelname)s %(message)s',
-    handlers=[logging.StreamHandler()]
-)
 
 WAIT_FOR_SINGLE_OBJECT_TIMEOUT = 2000 #ms
 PROCESS_ALL_ACCESS = 0x1F0FFF

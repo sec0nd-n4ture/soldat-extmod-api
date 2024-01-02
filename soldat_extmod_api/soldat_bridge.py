@@ -1,5 +1,5 @@
 from interprocess_utils.process_bridge import ProcessBridge
-from win32con import MEM_COMMIT, MEM_RESERVE, PAGE_EXECUTE_READ, PAGE_READWRITE, MEM_RELEASE
+from win32.lib.win32con import MEM_COMMIT, MEM_RESERVE, PAGE_EXECUTE_READ, PAGE_READWRITE, MEM_RELEASE
 
 
 WAIT_FOR_SINGLE_OBJECT_TIMEOUT = 2000 #ms
