@@ -28,6 +28,8 @@ class GraphicsPatcher:
         self.assembler.add_to_symbol_table("ptr_text_array", self.text_addresses + 0x4)
         self.assembler.add_to_symbol_table("RIhookContinue", addresses[self.soldat_bridge.executable_hash]["RenderInterface"] + 0x8)
         self.assembler.add_to_symbol_table("FormKeyPressContinue", addresses[self.soldat_bridge.executable_hash]["FormKeyPress"] + 0x7)
+        module_dir = os.path.dirname(os.path.realpath(__file__))
+        self.patches_dir = os.path.join(os.path.dirname(module_dir), "patches")
 
     @property
     def check_patch(self):
@@ -37,5 +39,5 @@ class GraphicsPatcher:
         fp_buffer = self.soldat_bridge.allocate_memory(48, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE)
         self.soldat_bridge.write(fp_buffer, pack("f", 2)) # constant 2.0 for calculations later
         self.assembler.add_to_symbol_table("fp_buffer", fp_buffer)
-        self.patcher.patch(os.getcwd()+"\\soldat_extmod_api\\patches\\gui_patch.asm", "RenderInterface", 3)
-        self.patcher.patch(os.getcwd()+"\\soldat_extmod_api\\patches\\keypress_hook.asm", "FormKeyPress", 1)
+        self.patcher.patch(os.path.join(self.patches_dir, "gui_patch.asm"), "RenderInterface", 3)
+        self.patcher.patch(os.path.join(self.patches_dir, "keypress_hook.asm"), "FormKeyPress", 1)

@@ -7,4 +7,7 @@ __pycache__/
 *.pyc
 
 *.log
-*.png
+
+build/
+dist/
+*.egg-info
