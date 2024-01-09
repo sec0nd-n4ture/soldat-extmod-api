@@ -61,7 +61,7 @@ class MapManager:
             push 0x{team.hex()}
             mov ecx, 0x{b_ptr.to_bytes(4, "big").hex()}
             mov edx, 0x{a_ptr.to_bytes(4, "big").hex()}
-            mov eax, dword ptr ds:[tpolymap]
+            mov eax, tpolymap
             call TPolyMap.RayCast
             mov byte ptr ds:[0x{raycast_result_ptr.to_bytes(4, "big").hex()}], al
             xor eax, eax
@@ -101,7 +101,7 @@ class MapManager:
             push 0x{is_flag.to_bytes().hex()}
             mov edx, 0x{pos_ptr.to_bytes(4, "big").hex()}
             mov ecx, 0x{perp_ptr.to_bytes(4, "big").hex()}
-            mov eax, dword ptr ds:[tpolymap]
+            mov eax, tpolymap
             call TPolyMap.CollisionTest
             mov byte ptr ds:[0x{col_res_ptr.to_bytes(4, "big").hex()}], al
             xor eax, eax
