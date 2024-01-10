@@ -3,6 +3,7 @@ from soldat_extmod_api.graphics_helper.math_utils import lerpf, radians, cos, si
 from win_precise_time import time as precise_time
 from soldat_extmod_api.graphics_helper.sm_text import CharacterSize, FontStyle
 from soldat_extmod_api.graphics_helper.gui_addon import Container, Interactive, Rectangle, Button
+import time
 
 
 class CircularMenu(Container, Interactive):
@@ -218,6 +219,7 @@ class ModMain:
                 self.api.tick_event_dispatcher()
             except KeyboardInterrupt:
                 break
+            time.sleep(0.01)
 
     def on_dxready(self):
         self.circular_menu = CircularMenu(self.api, self.api.get_gui_frame())
