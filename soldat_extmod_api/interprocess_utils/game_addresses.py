@@ -96,7 +96,8 @@ addresses = {
             "cam_misc_7": 0x005CC07C,
             "cam_misc_8": 0x005CC4F5,
             "cam_misc_9": 0x005CC503,
-            "own_id": 0x00660800
+            "own_id": 0x00660800,
+            "ExitToMenu": 0x0054ECCC
         },
     3785736190: { # 1.7.1.1 https://static.soldat.pl/downloads/soldat1711.zip
             "GfxCreateTexture": 0x0050A73C,
@@ -143,6 +144,7 @@ addresses = {
             "cam_misc_7": 0x005CDA74,
             "cam_misc_8": 0x005CDEC9,
             "cam_misc_9": 0x005CDED7,
-            "own_id": 0x00663AE4
+            "own_id": 0x00663AE4,
+            "ExitToMenu": 0x00552668
     }
 }
