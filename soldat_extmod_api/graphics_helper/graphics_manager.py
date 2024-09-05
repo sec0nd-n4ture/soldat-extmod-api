@@ -76,8 +76,9 @@ class GraphicsManager:
         assembled_code = self.assembler.assemble(code, code_addr)
 
         self.soldat_bridge.write(code_addr, assembled_code)
-        exitcode, returns = self.soldat_bridge.execute(code_addr, [[ptr_addr, 4], [ptr_addr+4, 4], [ptr_addr+8, 4], [code_addr+0x60, 4]], True)
-        self.soldat_bridge.free_memory(image_addr)
+        exitcode, returns = self.soldat_bridge.execute(code_addr, 
+                            [[ptr_addr, 4], [ptr_addr+4, 4], [ptr_addr+8, 4], [code_addr+0x60, 4]],
+                            True, free_after_use=True)
         if exitcode == 0:
             id = ImageData(fname, 
                            unpack("I", returns[2])[0],

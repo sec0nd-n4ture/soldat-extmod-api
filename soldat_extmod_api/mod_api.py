@@ -8,7 +8,7 @@ from soldat_extmod_api.graphics_helper.color import *
 from soldat_extmod_api.graphics_helper.graphics_patcher import GraphicsPatcher
 from soldat_extmod_api.graphics_helper.graphics_manager import GraphicsManager
 from soldat_extmod_api.graphics_helper.graphics_manager import *
-from soldat_extmod_api.graphics_helper.sm_image import InterfaceImage, WorldImage
+from soldat_extmod_api.graphics_helper.sm_image import InterfaceImage, WorldImage, ImageAddressCache
 from soldat_extmod_api.graphics_helper.sm_text import InterfaceText, WorldText, FontStyle
 from soldat_extmod_api.player_helper.player import Player
 from soldat_extmod_api.interprocess_utils.game_addresses import addresses
@@ -40,6 +40,7 @@ class ModAPI(metaclass=Singleton):
         if not self.graphics_patcher.check_patch:
             self.graphics_patcher.apply_patch()
         self.graphics_manager = GraphicsManager(self)
+        self.image_address_cache = ImageAddressCache()
         self.event_dispatcher = EventDispatcher(self)
         self.event_dispatcher.set_own_player(self.get_player(self.get_own_id()))
         self.frame = Frame()

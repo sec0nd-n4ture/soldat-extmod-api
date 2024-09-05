@@ -86,8 +86,8 @@ class Image:
         sprite_ptr = self.soldat_bridge.allocate_memory(len(sprite_bytes), MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE)
         self.soldat_bridge.write(sprite_ptr, sprite_bytes)
         count = int.from_bytes(self.soldat_bridge.read(self.mod_api.graphics_patcher.sprite_addresses, 4), "little", signed=False)
-
-        new_saddr = self.mod_api.graphics_patcher.sprite_addresses + (count * 0x26) + 4
+        new_saddr = self.mod_api.image_address_cache.get()
+        new_saddr = new_saddr if new_saddr else self.mod_api.graphics_patcher.sprite_addresses + (count * 0x26) + 4
         self.soldat_bridge.write(self.mod_api.graphics_patcher.sprite_addresses, (count+1).to_bytes(4, "little", signed=False))
         self.soldat_bridge.write(new_saddr, sprite_ptr.to_bytes(4, "little"))
         self.soldat_bridge.write(new_saddr + 0x4, position.to_bytes()) 
@@ -99,6 +99,14 @@ class Image:
         self.baseAddr = new_saddr
         self.spriteAddr = sprite_ptr
 
+    def destroy(self):
+        count = int.from_bytes(self.soldat_bridge.read(self.mod_api.graphics_patcher.sprite_addresses, 4), "little", signed=False)
+        self.soldat_bridge.write(self.mod_api.graphics_patcher.sprite_addresses, (count-1).to_bytes(4, "little", signed=False))
+        self.soldat_bridge.free_memory(self.spriteAddr + 28)
+        self.hide()
+        self.soldat_bridge.write(self.baseAddr, b"\xff\xff\xff\xff")
+        self.mod_api.image_address_cache.add(self.baseAddr)
+        del self
 
 class InterfaceImage(Image):
     def __init__(self, mod_api, image_data: ImageData, 
@@ -135,3 +143,13 @@ class WorldImage(Image):
 
     def set_pos(self, pos: Vector2D):
         return super().set_pos(pos)
+
+class ImageAddressCache:
+    def __init__(self) -> None:
+        self.cache = []
+
+    def add(self, address: int) -> None:
+        self.cache.append(address)
+
+    def get(self) -> int | None:
+        return None if not self.cache else self.cache.pop(0)

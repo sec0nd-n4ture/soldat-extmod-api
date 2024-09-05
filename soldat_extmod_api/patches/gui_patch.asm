@@ -48,15 +48,18 @@ gfx_draw_loop:
     mov ebx, dword ptr ds:[ptr_sprite_count]
     inc ebx
     mov edi, ptr_sprite_array
+    sub edi, 0x26
 check_sprite_active:
+    add edi, 0x26
     cmp byte ptr ds:[edi+0x24], 0x1
     je check_sprite_type
+    cmp dword ptr ds:[edi], 0xffffffff
+    je check_sprite_active
 
 sprite_iter_continue:
     dec ebx
     cmp ebx, 0x0
     je text_draw_loop
-    add edi, 0x26
     jmp check_sprite_active
 
 check_sprite_type:
