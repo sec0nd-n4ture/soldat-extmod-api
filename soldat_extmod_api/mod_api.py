@@ -8,7 +8,7 @@ from soldat_extmod_api.graphics_helper.color import *
 from soldat_extmod_api.graphics_helper.graphics_patcher import GraphicsPatcher
 from soldat_extmod_api.graphics_helper.graphics_manager import GraphicsManager
 from soldat_extmod_api.graphics_helper.graphics_manager import *
-from soldat_extmod_api.graphics_helper.sm_image import InterfaceImage, WorldImage, ImageAddressCache
+from soldat_extmod_api.graphics_helper.sm_image_linkedlist import ImageNode
 from soldat_extmod_api.graphics_helper.sm_text import InterfaceText, WorldText, FontStyle
 from soldat_extmod_api.player_helper.player import Player
 from soldat_extmod_api.interprocess_utils.game_addresses import addresses
@@ -40,7 +40,6 @@ class ModAPI(metaclass=Singleton):
         if not self.graphics_patcher.check_patch:
             self.graphics_patcher.apply_patch()
         self.graphics_manager = GraphicsManager(self)
-        self.image_address_cache = ImageAddressCache()
         self.event_dispatcher = EventDispatcher(self)
         self.event_dispatcher.set_own_player(self.get_player(self.get_own_id()))
         self.frame = Frame()
@@ -53,28 +52,28 @@ class ModAPI(metaclass=Singleton):
                            position: Vector2D = Vector2D.zero(), 
                            scale: Vector2D = Vector2D(1, 1), 
                            rotation: Vector3D = Vector3D.zero(), 
-                           color: Color = WHITE) -> WorldImage:
+                           color: Color = WHITE) -> ImageNode:
         '''
         Creates an image in world space.
 
         Returns a WorldImage object.
         '''
         image_data = self.graphics_manager.load_image(path_to_image)
-        return WorldImage(self, image_data, position, scale, rotation, color)
+        return ImageNode(self, image_data, position, scale, rotation, color, True)
 
     def create_interface_image(self, 
                                path_to_image: str, 
                                position: Vector2D = Vector2D.zero(), 
                                scale: Vector2D = Vector2D(1, 1), 
                                rotation: Vector3D = Vector3D.zero(), 
-                               color: Color = WHITE) -> InterfaceImage:
+                               color: Color = WHITE) -> ImageNode:
         '''
         Creates an image in screen space.
 
         Returns an InterfaceImage object.
         '''
         image_data = self.graphics_manager.load_image(path_to_image)
-        return InterfaceImage(self, image_data, position, scale, rotation, color)
+        return ImageNode(self, image_data, position, scale, rotation, color, False)
     
     def create_world_text(self,
                           text: str, 

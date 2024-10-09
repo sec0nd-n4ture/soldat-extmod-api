@@ -45,75 +45,68 @@ gfx_draw_loop:
     mov dword ptr ds:[ptr_esp_save], esp
     mov dword ptr ds:[ptr_esi_save], esi
     mov dword ptr ds:[ptr_edi_save], edi
-    mov ebx, dword ptr ds:[ptr_sprite_count]
-    inc ebx
-    mov edi, ptr_sprite_array
-    sub edi, 0x26
+    mov ebx, dword ptr ds:[ptr_sprite_head]
+    cmp ebx, 0x0
+    je text_draw_loop
 check_sprite_active:
-    add edi, 0x26
-    cmp byte ptr ds:[edi+0x24], 0x1
+    cmp byte ptr ds:[ebx+0x24], 0x1
     je check_sprite_type
-    cmp dword ptr ds:[edi], 0xffffffff
-    je check_sprite_active
-
 sprite_iter_continue:
-    dec ebx
+    mov ebx, dword ptr ds:[ebx+0x26]
     cmp ebx, 0x0
     je text_draw_loop
     jmp check_sprite_active
-
 check_sprite_type:
-    cmp byte ptr ds:[edi+0x25], 0x1
+    cmp byte ptr ds:[ebx+0x25], 0x1
     je sprite_draw_world
-
 sprite_draw_screen:
-    push dword ptr ds:[edi+0x4]
-    push dword ptr ds:[edi+0x8]
-    push dword ptr ds:[edi+0xC]
-    push dword ptr ds:[edi+0x10]
-    push dword ptr ds:[edi+0x14]
-    push dword ptr ds:[edi+0x18]
-    push dword ptr ds:[edi+0x1C]
-    mov edx, dword ptr ds:[edi+0x20]
-    mov eax, dword ptr ds:[edi]
+    push dword ptr ds:[ebx+0x4]
+    push dword ptr ds:[ebx+0x8]
+    push dword ptr ds:[ebx+0xC]
+    push dword ptr ds:[ebx+0x10]
+    push dword ptr ds:[ebx+0x14]
+    push dword ptr ds:[ebx+0x18]
+    push dword ptr ds:[ebx+0x1C]
+    mov edx, dword ptr ds:[ebx+0x20]
+    mov eax, dword ptr ds:[ebx]
     call GfxDrawSprite
     jmp sprite_iter_continue
 
 sprite_draw_world:
     mov eax, fp_buffer
     add eax, 0x10
-    mov esi, [edi]
+    mov esi, [ebx]
     add esi, 0x8
     mov esi, dword ptr ds:[esi]
     mov dword ptr ds:[eax], esi
     fild dword ptr ds:[eax]
     fstp dword ptr ds:[eax]
     push dword ptr ds:[eax]
-    push dword ptr ds:[edi+0xC]
-    mov ecx, dword ptr ds:[edi+0x4]
+    push dword ptr ds:[ebx+0xC]
+    mov ecx, dword ptr ds:[ebx+0x4]
     call WorldToScreenX
     push ecx
     mov eax, fp_buffer
     add eax, 0x10
-    mov esi, [edi]
+    mov esi, [ebx]
     add esi, 0xC
     mov esi, dword ptr ds:[esi]
     mov dword ptr ds:[eax], esi
     fild dword ptr ds:[eax]
     fstp dword ptr ds:[eax]
     push dword ptr ds:[eax]
-    push dword ptr ds:[edi+0x10]
-    mov ecx, dword ptr ds:[edi+0x8]
+    push dword ptr ds:[ebx+0x10]
+    mov ecx, dword ptr ds:[ebx+0x8]
     call WorldToScreenY
     add esp, 0x8
     push ecx
-    push dword ptr ds:[edi+0xC]
-    push dword ptr ds:[edi+0x10]
-    push dword ptr ds:[edi+0x14]
-    push dword ptr ds:[edi+0x18]
-    push dword ptr ds:[edi+0x1C]
-    mov edx, dword ptr ds:[edi+0x20]
-    mov eax, dword ptr ds:[edi]
+    push dword ptr ds:[ebx+0xC]
+    push dword ptr ds:[ebx+0x10]
+    push dword ptr ds:[ebx+0x14]
+    push dword ptr ds:[ebx+0x18]
+    push dword ptr ds:[ebx+0x1C]
+    mov edx, dword ptr ds:[ebx+0x20]
+    mov eax, dword ptr ds:[ebx]
     call GfxDrawSprite
     jmp sprite_iter_continue
 
