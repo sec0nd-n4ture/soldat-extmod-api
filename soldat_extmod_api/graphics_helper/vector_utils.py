@@ -155,7 +155,7 @@ class Vector3D:
         return Vector3D(self.x - v.x, self.y - v.y, self.z - v.z)
 
     def to_bytes(self):
-        return pack("fff",self.x, self.y, self.y)
+        return pack("fff",self.x, self.y, self.z)
     
     def __neg__(self):
         return Vector3D(-self.x, -self.y, -self.z)
