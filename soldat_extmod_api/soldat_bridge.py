@@ -1,4 +1,4 @@
-from interprocess_utils.process_bridge import ProcessBridge
+from soldat_extmod_api.interprocess_utils.process_bridge import ProcessBridge
 from win32.lib.win32con import MEM_COMMIT, MEM_RESERVE, PAGE_EXECUTE_READ, PAGE_READWRITE, MEM_RELEASE
 
 
