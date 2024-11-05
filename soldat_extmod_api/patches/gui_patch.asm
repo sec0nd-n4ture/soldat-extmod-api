@@ -60,10 +60,22 @@ check_sprite_type:
     cmp byte ptr ds:[ebx+0x25], 0x1
     je sprite_draw_world
 sprite_draw_screen:
+    cmp byte ptr ds:[ebx+0x2e], 0x0
+    je load_pos
+    mov edi, dword ptr ds:[ebx+0x4]
+    mov edi, dword ptr ds:[edi]
+    push edi
+    mov edi, dword ptr ds:[ebx+0x8]
+    mov edi, dword ptr ds:[edi]
+    push edi
+    jmp load_scale
+load_pos:
     push dword ptr ds:[ebx+0x4]
     push dword ptr ds:[ebx+0x8]
+load_scale:
     push dword ptr ds:[ebx+0xC]
     push dword ptr ds:[ebx+0x10]
+load_rot:
     push dword ptr ds:[ebx+0x14]
     push dword ptr ds:[ebx+0x18]
     push dword ptr ds:[ebx+0x1C]
@@ -83,9 +95,23 @@ sprite_draw_world:
     fstp dword ptr ds:[eax]
     push dword ptr ds:[eax]
     push dword ptr ds:[ebx+0xC]
+    cmp byte ptr ds:[ebx+0x2e], 0x0
+    je load_world_pos_x
+    mov edi, dword ptr ds:[ebx+0x4]
+    mov ecx, dword ptr ds:[edi]
+    jmp load_world_pos_x_continue
+load_world_pos_x:
     mov ecx, dword ptr ds:[ebx+0x4]
+load_world_pos_x_continue:
     call WorldToScreenX
-    push ecx
+    mov eax, fp_buffer
+    add eax, 0x10
+    mov dword ptr ds:[eax], ecx
+    fld dword ptr ds:[eax]
+    fld dword ptr ds:[ebx+0x30]
+    faddp st(1), st(0)
+    fstp dword ptr ds:[eax]
+    push dword ptr ds:[eax]
     mov eax, fp_buffer
     add eax, 0x10
     mov esi, [ebx]
@@ -96,10 +122,24 @@ sprite_draw_world:
     fstp dword ptr ds:[eax]
     push dword ptr ds:[eax]
     push dword ptr ds:[ebx+0x10]
+    cmp byte ptr ds:[ebx+0x2e], 0x0
+    je load_world_pos_y
+    mov edi, dword ptr ds:[ebx+0x8]
+    mov ecx, dword ptr ds:[edi]
+    jmp load_world_pos_y_continue
+load_world_pos_y:
     mov ecx, dword ptr ds:[ebx+0x8]
+load_world_pos_y_continue:
     call WorldToScreenY
     add esp, 0x8
-    push ecx
+    mov eax, fp_buffer
+    add eax, 0x10
+    mov dword ptr ds:[eax], ecx
+    fld dword ptr ds:[eax]
+    fld dword ptr ds:[ebx+0x34]
+    faddp st(1), st(0)
+    fstp dword ptr ds:[eax]
+    push dword ptr ds:[eax]
     push dword ptr ds:[ebx+0xC]
     push dword ptr ds:[ebx+0x10]
     push dword ptr ds:[ebx+0x14]
