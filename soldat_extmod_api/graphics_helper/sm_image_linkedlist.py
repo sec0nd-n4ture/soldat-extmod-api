@@ -1,8 +1,8 @@
 from struct import unpack
 from soldat_extmod_api.game_structs.gfx_structs import ImageData, TGfxRect, TGfxSprite
 from win32.lib.win32con import MEM_COMMIT, MEM_RESERVE, PAGE_READWRITE
-from vector_utils import Vector2D, Vector3D
-from color import Color
+from soldat_extmod_api.graphics_helper.vector_utils import Vector2D, Vector3D
+from soldat_extmod_api.graphics_helper.color import Color
 
 '''
 ImageNode struct
@@ -22,9 +22,13 @@ offs   name                 size
 0x25   type                 1 bytes (bool)
 0x26   nextnode             4 bytes (ptr)
 0x2a   previousnode         4 bytes (ptr)
+0x2e   pos_ptr_flag         1 byte  (bool)
+0x2f   rot_ptr_flag         1 byte  (bool)
+0x30   offset_pos_x         4 byte  (float)
+0x34   offset_pos_y         4 byte  (float)
 +
 ___________
-0x2f
+0x38
 '''
 
 
@@ -45,7 +49,7 @@ class ImageNode:
             self.base_addr = base_addr
             return
         self.graphics_manager = mod_api.graphics_manager
-        self.base_addr = self.soldat_bridge.allocate_memory(0x2F, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE)
+        self.base_addr = self.soldat_bridge.allocate_memory(0x38, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE)
         texture = self.graphics_manager.CreateTexture(image_data.pData, image_data.components.to_bytes(4, "little", signed=False),
                                                       image_data.width.to_bytes(4, "little", signed=False),
                                                       image_data.height.to_bytes(4, "little", signed=False))
@@ -86,6 +90,7 @@ class ImageNode:
         self.soldat_bridge.write(self.base_addr + 0x24, b"\x01")
 
     def set_pos(self, pos: Vector2D):
+        self.soldat_bridge.write(self.base_addr + 0x2e, b"\x00")
         self.soldat_bridge.write(self.base_addr + 0x4, pos.to_bytes())
 
     def set_scale(self, scale: Vector2D):
@@ -110,6 +115,16 @@ class ImageNode:
     def __get_previous(self) -> int:
         raw = self.soldat_bridge.read(self.base_addr + 0x2a, 4)
         return int.from_bytes(raw, "little")
+    
+    def set_pointer_pos(self, x_addr: int, y_addr: int):
+        self.hide()
+        addr_qword = x_addr.to_bytes(4, "little") + y_addr.to_bytes(4, "little")
+        self.soldat_bridge.write(self.base_addr + 0x4, addr_qword)
+        self.soldat_bridge.write(self.base_addr + 0x2e, b"\x01")
+        self.show()
+
+    def set_pos_offset(self, offset: Vector2D):
+        self.soldat_bridge.write(self.base_addr + 0x30, offset.to_bytes())
 
     @property
     def get_pos(self) -> Vector2D:
