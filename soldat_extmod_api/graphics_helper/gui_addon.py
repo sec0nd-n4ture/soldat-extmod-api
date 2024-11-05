@@ -1,6 +1,6 @@
 from soldat_extmod_api.graphics_helper.color import Color, WHITE
 from soldat_extmod_api.graphics_helper.vector_utils import Vector2D
-from soldat_extmod_api.graphics_helper.sm_image import InterfaceImage
+from soldat_extmod_api.graphics_helper.sm_image_linkedlist import ImageNode
 from soldat_extmod_api.graphics_helper.sm_text import InterfaceText
 from soldat_extmod_api.graphics_helper.sm_text import TEXT_MAX_LENGTH
 from soldat_extmod_api.event_dispatcher import Event
@@ -68,7 +68,7 @@ class Frame:
 
 
 class UIElement(Rectangle):
-    def __init__(self, parent, padding_x: float, padding_y: float, image: InterfaceImage, centered: bool = True):
+    def __init__(self, parent, padding_x: float, padding_y: float, image: ImageNode, centered: bool = True):
         self.parent = parent
         self.padding = Vector2D(padding_x, padding_y)
         self.image = image
@@ -93,11 +93,11 @@ class UIElement(Rectangle):
         self.image.set_pos(pos)
     
 class Container(UIElement):
-    def __init__(self, parent, padding_x: float, padding_y: float, image: InterfaceImage, centered: bool = True):
+    def __init__(self, parent, padding_x: float, padding_y: float, image: ImageNode, centered: bool = True):
         super().__init__(parent, padding_x, padding_y, image, centered)
 
 class TextLabel(UIElement):
-    def __init__(self, parent, text: InterfaceText, padding_x: float, padding_y: float, text_padding_x: float, text_padding_y: float, image: InterfaceImage):
+    def __init__(self, parent, text: InterfaceText, padding_x: float, padding_y: float, text_padding_x: float, text_padding_y: float, image: ImageNode):
         super().__init__(parent, padding_x, padding_y, image, False)
         self.text = text
         if isinstance(parent, TextLabel):
@@ -236,7 +236,7 @@ class TextField(Interactive, TextLabel):
         self.__handle_on_hover(super().on_hover(position))
 
 class Button(Interactive, UIElement):
-    def __init__(self, mod_api, parent, padding_x: float, padding_y: float, image: InterfaceImage, centered: bool = True):
+    def __init__(self, mod_api, parent, padding_x: float, padding_y: float, image: ImageNode, centered: bool = True):
         super().__init__(mod_api)
         UIElement.__init__(self, parent, padding_x, padding_y, image, centered)
         self.cursor_inside = False
@@ -263,7 +263,7 @@ class Button(Interactive, UIElement):
         pass
 
 class Checkbox(Interactive, UIElement):
-    def __init__(self, mod_api, parent, padding_x: float, padding_y: float, image: InterfaceImage, centered: bool = True):
+    def __init__(self, mod_api, parent, padding_x: float, padding_y: float, image: ImageNode, centered: bool = True):
         super().__init__(mod_api)
         UIElement.__init__(self, parent, padding_x, padding_y, image, centered)
         self.checked_color = Color.from_bytes(b"\x9c\x9c\x9c\xff")
@@ -282,8 +282,8 @@ class PauseButton(Button):
                  parent, 
                  padding_x: float, 
                  padding_y: float, 
-                 image_playing: InterfaceImage, 
-                 image_paused: InterfaceImage, 
+                 image_playing: ImageNode, 
+                 image_paused: ImageNode, 
                  centered: bool = True):
         super().__init__(mod_api, parent, padding_x, padding_y, image_playing, centered)
         self.image_playing = image_playing
@@ -349,12 +349,12 @@ class PauseButton(Button):
             self.image_paused.show()
 
 class SliderContainer(Container):
-    def __init__(self, parent, padding_x: float, padding_y: float, image: InterfaceImage, centered: bool = True):
+    def __init__(self, parent, padding_x: float, padding_y: float, image: ImageNode, centered: bool = True):
         super().__init__(parent, padding_x, padding_y, image, centered)
         self.image.set_color(SLIDER_BACK_DEFAULT_COLOR)
 
 class SliderBar(Interactive, UIElement):
-    def __init__(self, mod_api, parent, padding_x: float, padding_y: float, image: InterfaceImage, slider_filled: InterfaceImage, centered: bool = True):
+    def __init__(self, mod_api, parent, padding_x: float, padding_y: float, image: ImageNode, slider_filled: ImageNode, centered: bool = True):
         super().__init__(mod_api)
         UIElement.__init__(self, parent, padding_x, padding_y, image, centered)
         self.dragging = False
@@ -396,7 +396,7 @@ class SliderBar(Interactive, UIElement):
 
 
 class SliderKnob(UIElement):
-    def __init__(self, parent: SliderBar, padding_x: float, padding_y: float, image: InterfaceImage, percentage: float):
+    def __init__(self, parent: SliderBar, padding_x: float, padding_y: float, image: ImageNode, percentage: float):
         super().__init__(parent, padding_x, padding_y, image, False)
         self.image.set_color(SLIDER_KNOB_DEFAULT_COLOR)
         if percentage > 100:
