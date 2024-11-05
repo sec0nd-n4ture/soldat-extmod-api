@@ -1,6 +1,5 @@
 from soldat_extmod_api.interprocess_utils.game_addresses import addresses
 from soldat_extmod_api.graphics_helper.vector_utils import Vector2D, Vector2Ds
-from soldat_extmod_api.metaclasses.singleton import Singleton
 from struct import unpack
 
 class Player:
@@ -21,26 +20,28 @@ class Player:
 
 
     def get_position(self) -> Vector2D:
-        return Vector2D(*unpack("ff", self.soldat_bridge.read(self.position_addr, 8)))
+        return Vector2D(*unpack("ff", self.soldat_bridge.read(self.position_addr+4, 8)))
 
     def get_position_bytes(self):
-        return self.soldat_bridge.read(self.position_addr, 8)
+        return self.soldat_bridge.read(self.position_addr+4, 8)
     
     def set_position(self, position: Vector2D | bytes):
         if isinstance(position, bytes):
-            return self.soldat_bridge.write(self.position_addr, position)
-        self.soldat_bridge.write(self.position_addr, position.to_bytes())
+            return self.soldat_bridge.write(self.position_addr+4, position)
+        self.soldat_bridge.write(self.position_addr+4, position.to_bytes())
 
 
     def get_velocity(self) -> Vector2D:
-        return Vector2D(*unpack("ff", self.soldat_bridge.read(self.velocity_addr, 8)))
+        return Vector2D(*unpack("ff", self.soldat_bridge.read(self.velocity_addr+4, 8)))
     
     def set_velocity(self, velocity: Vector2D | bytes):
         if isinstance(velocity, bytes):
             return self.soldat_bridge.write(self.velocity_addr, velocity)
-        self.soldat_bridge.write(self.velocity_addr, velocity.to_bytes())
+        self.soldat_bridge.write(self.velocity_addr+4, velocity.to_bytes())
     
-    
+    def get_direction(self) -> bool:
+        return self.soldat_bridge.read(self.tsprite_object_addr+0xA, 1) == b"\xFF"
+
     def get_mouse_world_pos(self) -> Vector2Ds:
         return Vector2Ds(*unpack("hh", self.soldat_bridge.read(self.mouse_world_pos_addr, 4)))
 
