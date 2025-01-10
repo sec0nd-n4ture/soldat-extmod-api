@@ -42,7 +42,7 @@ class EventDispatcher:
     def __init__(self, mod_api):
         self.soldat_bridge = mod_api.soldat_bridge
         self.own_player = None
-        self.graphics_manager = mod_api.graphics_manager
+        self.graphics_patcher = mod_api.graphics_patcher
         self.mod_api = mod_api
         self.map_manager = None
         self.addr_directx_ready = addresses[self.soldat_bridge.executable_hash]["dxready"]
@@ -212,10 +212,10 @@ class EventDispatcher:
                 self.current_map = current_map
 
         if Event.INTERNAL_KEYPRESS in self.callbacks:
-            press_count = int().from_bytes(self.soldat_bridge.read(self.graphics_manager.keypress_buffer_inc_address, 4), "little")
+            press_count = int.from_bytes(self.soldat_bridge.read(self.graphics_patcher.keypress_buffer_inc_address, 4), "little")
             if press_count != self.keypress_count:
                 self.keypress_count = press_count
-                keychar = self.soldat_bridge.read(self.graphics_manager.keypress_buffer_address, 2).decode("utf-16")
+                keychar = self.soldat_bridge.read(self.graphics_patcher.keypress_buffer_address, 2).decode("utf-16")
                 self.__dispatch(Event.INTERNAL_KEYPRESS, keychar)
 
         if Event.MOUSE_WHEEL in self.callbacks:
