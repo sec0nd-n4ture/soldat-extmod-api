@@ -1,4 +1,3 @@
-from soldat_extmod_api.interprocess_utils.game_addresses import addresses
 from enum import Enum, auto
 from soldat_extmod_api.interprocess_utils.kernel_wrapper import GetKeyState
 from ctypes import c_short
@@ -28,6 +27,8 @@ class Event(Enum):
     KEYBOARD_KEYUP = auto()
     INTERNAL_KEYPRESS = auto()
     MAP_CHANGE = auto()
+    DINPUT_READY = auto()
+    DINPUT_NOTREADY = auto()
 
 # https://learn.microsoft.com/en-us/windows/win32/inputdev/virtual-key-codes
 class VK_KEYCODE(Enum):
@@ -45,8 +46,9 @@ class EventDispatcher:
         self.graphics_patcher = mod_api.graphics_patcher
         self.mod_api = mod_api
         self.map_manager = None
-        self.addr_directx_ready = addresses[self.soldat_bridge.executable_hash]["dxready"]
-        self.addr_dimousestate2 = addresses[self.soldat_bridge.executable_hash]["dimousestate2"]
+        self.addr_directx_ready = mod_api.addresses["dxready"]
+        self.addr_dimousestate2 = mod_api.addresses["dimousestate2"]
+        self.addr_dinput_ready = mod_api.addresses["diready"]
         self.callbacks = {}
         self.lcontrol_down = 0
         self.current_map = ""
@@ -58,6 +60,7 @@ class EventDispatcher:
         self.server_msg_count = 0
         self.keypress_count = 0
         self.directx_state = False
+        self.dinput_state = False
         self.checkpoints = []
         self.respawned = True
         self.pynput_listener = keyboard.Listener(on_press=self.pynput_on_keyboard_down, on_release=self.pynput_on_keyboard_up, win32_event_filter=self.win32_event_filter, suppress=False)
@@ -157,6 +160,14 @@ class EventDispatcher:
                 self.__dispatch(Event.DIRECTX_NOT_READY)
             self.directx_state = directx_state
         
+        if Event.DINPUT_READY in self.callbacks or Event.DINPUT_NOTREADY in self.callbacks:
+            dinput_state = bool.from_bytes(self.soldat_bridge.read(self.addr_dinput_ready, 1), "little")
+            if dinput_state != self.dinput_state and dinput_state == True:
+                self.dinput_state = dinput_state
+                self.__dispatch(Event.DINPUT_READY)
+            if dinput_state != self.dinput_state and dinput_state == False:
+                self.__dispatch(Event.DINPUT_NOTREADY)
+            self.dinput_state = dinput_state
         
         if Event.MOUSE_HOVER in self.callbacks:
             self.__dispatch(Event.MOUSE_HOVER)
