@@ -36,7 +36,7 @@ class Player:
     
     def set_velocity(self, velocity: Vector2D | bytes):
         if isinstance(velocity, bytes):
-            return self.soldat_bridge.write(self.velocity_addr, velocity)
+            return self.soldat_bridge.write(self.velocity_addr+4, velocity)
         self.soldat_bridge.write(self.velocity_addr+4, velocity.to_bytes())
     
     def get_direction(self) -> bool:
