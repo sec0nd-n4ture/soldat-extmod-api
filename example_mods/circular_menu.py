@@ -1,6 +1,5 @@
 from soldat_extmod_api.mod_api import *
 from soldat_extmod_api.graphics_helper.math_utils import lerpf, radians, cos, sin
-from win_precise_time import time as precise_time
 from soldat_extmod_api.graphics_helper.sm_text import CharacterSize, FontStyle
 from soldat_extmod_api.graphics_helper.gui_addon import Container, Interactive, Rectangle, Button
 import time
@@ -86,7 +85,7 @@ class CircularMenu(Container, Interactive):
                 button.target_position = button.start_position
 
     def update_transitions(self):
-        now = precise_time()
+        now = time.perf_counter()
         if now - self.past_time >= self.update_delay:
             self.set_pos(Vector2D(lerpf(self.position.x, self.target_position_x, self.transition_smoothness),
                                   lerpf(self.position.y, self.target_position_y, self.transition_smoothness)))
