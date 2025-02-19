@@ -1,7 +1,6 @@
 from soldat_extmod_api.game_structs.gfx_structs import ImageData, ImageDataCache
 from win32.lib.win32con import MEM_COMMIT, MEM_RESERVE, PAGE_EXECUTE_READWRITE, PAGE_READWRITE
 from struct import unpack
-import time
 
 class GraphicsManager:
     def __init__(self, mod_api):
@@ -22,7 +21,6 @@ class GraphicsManager:
         Returns:
         - None
         """
-        t1 = time.perf_counter()
         data_ptr_int = int().from_bytes(idata.pData, "little")
         image_data = bytearray(self.soldat_bridge.read(data_ptr_int, idata.height * idata.width * idata.components))
         for i in range(idata.height * idata.width):
@@ -31,7 +29,6 @@ class GraphicsManager:
             image_data[i * 4 + 1] = int(image_data[i * 4 + 1] * alpha)
             image_data[i * 4 + 2] = int(image_data[i * 4 + 2] * alpha)
         self.soldat_bridge.write(data_ptr_int, bytes(image_data))
-        print(f"Premultiplication took {time.perf_counter() - t1} ns, for {idata.width}x{idata.height} image size")
 
     def load_image(self, fname: str) -> ImageData:
         """
