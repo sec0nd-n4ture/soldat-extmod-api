@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='soldat_extmod_api',
-    version='0.0.8',
+    version='0.1.1',
     packages=find_packages(),
     install_requires=[
         'keystone_engine>=0.9.2',
