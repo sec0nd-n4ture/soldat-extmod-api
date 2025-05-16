@@ -1,12 +1,15 @@
 from soldat_extmod_api.game_structs.gfx_structs import ImageData, ImageDataCache
 from win32.lib.win32con import MEM_COMMIT, MEM_RESERVE, PAGE_EXECUTE_READWRITE, PAGE_READWRITE
 from struct import unpack
+from soldat_extmod_api.graphics_helper.gl_constants import *
+from soldat_extmod_api.graphics_helper.shader import Shader
+from soldat_extmod_api.interprocess_utils.shared_memory import SharedMemory
 
 class GraphicsManager:
     def __init__(self, mod_api):
         self.assembler = mod_api.assembler
         self.soldat_bridge = mod_api.soldat_bridge
-        self.shared_graphics_memory = mod_api.graphics_patcher.shared_memory
+        self.shared_graphics_memory: SharedMemory = mod_api.graphics_patcher.shared_memory
         self.branch_controller = mod_api.graphics_patcher.branch_controller
         self.cache = ImageDataCache()
 
@@ -136,3 +139,54 @@ class GraphicsManager:
         """
         self.branch_controller.set_redirect()
         self.branch_controller.disable_draw_loop()
+
+    def CreateShader(self, shader_type: ShaderType, shader_code: str) -> Shader | None:
+        self.shared_graphics_memory.push_shader_type(shader_type.value)
+        src_addr = self.shared_graphics_memory.push_shader_source(shader_code)
+
+        self.branch_controller.set_createshader_flag()
+        self.branch_controller.set_redirect()
+        while self.soldat_bridge.read(self.shared_graphics_memory.get_addr_flagshadercreate, 1) == b"\x01": pass
+        shader_handle = self.shared_graphics_memory.get_return_value
+        self.soldat_bridge.free_memory(src_addr)
+        if shader_handle != b"\x00\x00\x00\x00":
+            return Shader(int.from_bytes(shader_handle, "little"))
+
+    def CreateShaderProgram(self) -> int:
+        self.branch_controller.set_createprog_flag()
+        self.branch_controller.set_redirect()
+        while self.soldat_bridge.read(self.shared_graphics_memory.get_addr_flagprogcreate, 1) == b"\x01": pass
+        prog_handle = self.shared_graphics_memory.get_return_value
+        if prog_handle != b"\x00\x00\x00\x00":
+            return int.from_bytes(prog_handle, "little")
+
+    def AttachShader(self, shader: Shader, program_handle: int) -> None:
+        self.shared_graphics_memory.push_shader_handle(shader.handle)
+        self.shared_graphics_memory.push_prog_handle(program_handle)
+        self.branch_controller.set_attachshader_flag()
+        self.branch_controller.set_redirect()
+        while self.soldat_bridge.read(self.shared_graphics_memory.get_addr_flagattachshader, 1) == b"\x01": pass
+        return
+
+    def LinkProgram(self, program_handle: int) -> None:
+        self.shared_graphics_memory.push_prog_handle(program_handle)
+        self.branch_controller.set_linkprogram_flag()
+        self.branch_controller.set_redirect()
+        while self.soldat_bridge.read(self.shared_graphics_memory.get_addr_flaglinkprogram, 1) == b"\x01": pass
+        return
+
+    def CreateFrameBuffer(self) -> int:
+        self.branch_controller.set_createfbo_flag()
+        self.branch_controller.set_redirect()
+        while self.soldat_bridge.read(self.shared_graphics_memory.get_addr_flagcreatefbo, 1) == b"\x01": pass
+        fbo_addr = self.shared_graphics_memory.get_return_value
+        return int.from_bytes(fbo_addr, "little")
+
+    def GetUniformLocation(self, uniform: str, program_handle: int) -> int:
+        self.shared_graphics_memory.push_prog_handle(program_handle)
+        self.shared_graphics_memory.push_uniform_name(uniform)
+        self.branch_controller.set_uniform_location_flag()
+        self.branch_controller.set_redirect()
+        while self.soldat_bridge.read(self.shared_graphics_memory.get_addr_flag_uniform, 1) == b"\x01": pass
+        location = self.shared_graphics_memory.get_return_value
+        return location

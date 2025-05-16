@@ -1,6 +1,6 @@
 from soldat_extmod_api.interprocess_utils.game_addresses import addresses
 from win32.lib.win32con import MEM_COMMIT, MEM_RESERVE, PAGE_EXECUTE_READWRITE
-
+import logging
 
 class Patcher:
     from mod_api import ModAPI
@@ -39,7 +39,7 @@ class Patcher:
         self.assembler.add_to_symbol_table("Hook", code_addr)
         trampoline = self.assembler.assemble("jmp Hook;"+"".join(["nop;" for nop in range(padding)]),
                                     self.game_addresses[func_name])
-
+        logging.info(f"{func_name} has been patched and redirected to {hex(code_addr)}")
         self.soldat_bridge.write(self.game_addresses[func_name], trampoline) # <--- POSSIBLE PROBLEM
         '''
         Writing to .text section of a running process may lead to undefined behaviour.

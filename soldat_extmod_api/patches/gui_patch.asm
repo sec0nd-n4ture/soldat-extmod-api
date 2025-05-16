@@ -14,7 +14,6 @@ exit_norestore:
     mov ebp, esp
     mov ecx, ifacebyte
     xor eax, eax
-    mov byte ptr ds:[flag_texture_func], al
     jmp RIhookContinue
 create_texture:
     mov dword ptr ds:[ptr_ebx_save], ebx
@@ -29,14 +28,134 @@ create_texture:
     mov eax, dword ptr ds:[ptr_imagewidth]
     call GfxCreateTexture
     mov dword ptr ds:[ptr_ret_save], eax
+    mov byte ptr ds:[flag_texture_func], 0x0
+    jmp exit_restore
+create_shader:
+    mov dword ptr ds:[ptr_ebx_save], ebx
+    mov dword ptr ds:[ptr_edx_save], edx
+    mov dword ptr ds:[ptr_ebp_save], ebp
+    mov dword ptr ds:[ptr_esp_save], esp
+    mov dword ptr ds:[ptr_esi_save], esi
+    mov dword ptr ds:[ptr_edi_save], edi
+    mov eax, dword ptr ds:[ptr_shadertype]
+    mov edx, dword ptr ds:[ptr_shadersource]
+    call CreateShader
+    mov dword ptr ds:[ptr_ret_save], eax
+    mov byte ptr ds:[flag_shadercreate_func], 0x0
+    jmp exit_restore
+create_program:
+    mov dword ptr ds:[ptr_ebx_save], ebx
+    mov dword ptr ds:[ptr_edx_save], edx
+    mov dword ptr ds:[ptr_ebp_save], ebp
+    mov dword ptr ds:[ptr_esp_save], esp
+    mov dword ptr ds:[ptr_esi_save], esi
+    mov dword ptr ds:[ptr_edi_save], edi
+    mov eax, dword ptr ds:[pglCreateProgram]
+    mov eax, dword ptr ds:[eax]
+    call eax
+    mov dword ptr ds:[ptr_ret_save], eax
+    mov byte ptr ds:[flag_progcreate_func], 0x0
+    jmp exit_restore
+attach_shader:
+    mov dword ptr ds:[ptr_ebx_save], ebx
+    mov dword ptr ds:[ptr_edx_save], edx
+    mov dword ptr ds:[ptr_ebp_save], ebp
+    mov dword ptr ds:[ptr_esp_save], esp
+    mov dword ptr ds:[ptr_esi_save], esi
+    mov dword ptr ds:[ptr_edi_save], edi
+    mov ebx, dword ptr ds:[ptr_shaderhandle]
+    push ebx
+    mov ebx, dword ptr ds:[ptr_proghandle]
+    push ebx
+    mov eax, dword ptr ds:[pglAttachShader]
+    mov eax, dword ptr ds:[eax]
+    call eax
+    mov byte ptr ds:[flag_attachshader_func], 0x0
+    jmp exit_restore
+link_program:
+    mov dword ptr ds:[ptr_ebx_save], ebx
+    mov dword ptr ds:[ptr_edx_save], edx
+    mov dword ptr ds:[ptr_ebp_save], ebp
+    mov dword ptr ds:[ptr_esp_save], esp
+    mov dword ptr ds:[ptr_esi_save], esi
+    mov dword ptr ds:[ptr_edi_save], edi
+    mov ebx, dword ptr ds:[ptr_proghandle]
+    push ebx
+    mov eax, dword ptr ds:[pglLinkProgram]
+    mov eax, dword ptr ds:[eax]
+    call eax
+    mov byte ptr ds:[flag_linkprog_func], 0x0
+    jmp exit_restore
+create_frame_buffer:
+    mov dword ptr ds:[ptr_ebx_save], ebx
+    mov dword ptr ds:[ptr_edx_save], edx
+    mov dword ptr ds:[ptr_ebp_save], ebp
+    mov dword ptr ds:[ptr_esp_save], esp
+    mov dword ptr ds:[ptr_esi_save], esi
+    mov dword ptr ds:[ptr_edi_save], edi
+    mov eax, dword ptr ds:[screen_width]
+    mov eax, dword ptr ds:[eax]
+    mov edx, dword ptr ds:[screen_height]
+    mov edx, dword ptr ds:[edx]
+    mov ecx, 4
+    call GfxCreateRenderTarget
+    mov dword ptr ds:[ptr_ret_save], eax
+    mov byte ptr ds:[flag_fbocreate_func], 0x0
+    jmp exit_restore
+get_uniform_location:
+    mov dword ptr ds:[ptr_ebx_save], ebx
+    mov dword ptr ds:[ptr_edx_save], edx
+    mov dword ptr ds:[ptr_ebp_save], ebp
+    mov dword ptr ds:[ptr_esp_save], esp
+    mov dword ptr ds:[ptr_esi_save], esi
+    mov dword ptr ds:[ptr_edi_save], edi
+    mov ebx, dword ptr ds:[ptr_proghandle]
+    push ebx
+    mov eax, dword ptr ds:[pglUseProgram]
+    mov eax, dword ptr ds:[eax]
+    call eax
+    mov eax, dword ptr ds:[ptr_uniformname]
+    push eax
+    push ebx
+    mov eax, dword ptr ds:[pglGetUniformLocation]
+    mov eax, dword ptr ds:[eax]
+    call eax
+    mov dword ptr ds:[ptr_ret_save], eax
+    mov eax, dword ptr ds:[ptr_default_shader_handle]
+    push eax
+    mov eax, dword ptr ds:[pglUseProgram]
+    mov eax, dword ptr ds:[eax]
+    call eax
+    mov byte ptr ds:[flag_getuniformloc_func], 0x0
     jmp exit_restore
 check_moreflags:
     mov al, byte ptr ds:[flag_texture_func]
     cmp al, 0x1
     je create_texture
+    mov al, byte ptr ds:[flag_shadercreate_func]
+    cmp al, 0x1
+    je create_shader
+    mov al, byte ptr ds:[flag_progcreate_func]
+    cmp al, 0x1
+    je create_program
+    mov al, byte ptr ds:[flag_attachshader_func]
+    cmp al, 0x1
+    je attach_shader
+    mov al, byte ptr ds:[flag_linkprog_func]
+    cmp al, 0x1
+    je link_program
+    mov al, byte ptr ds:[flag_fbocreate_func]
+    cmp al, 0x1
+    je create_frame_buffer
+    mov al, byte ptr ds:[flag_getuniformloc_func]
+    cmp al, 0x1
+    je get_uniform_location
     mov al, byte ptr ds:[flag_draw_loop]
     cmp al, 0x1
     jne exit_norestore
+
+    
+
     
 gfx_draw_loop:
     mov dword ptr ds:[ptr_ebx_save], ebx
