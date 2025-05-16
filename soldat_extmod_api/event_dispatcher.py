@@ -29,6 +29,7 @@ class Event(Enum):
     MAP_CHANGE = auto()
     DINPUT_READY = auto()
     DINPUT_NOTREADY = auto()
+    SOLDAT_BRIDGE_COLLAPSE = auto()
 
 # https://learn.microsoft.com/en-us/windows/win32/inputdev/virtual-key-codes
 class VK_KEYCODE(Enum):
@@ -117,7 +118,7 @@ class EventDispatcher:
         else:
             ret_arg = None
         if evt_type in self.callbacks:
-            cbs = self.callbacks[evt_type]
+            cbs = self.callbacks[evt_type].copy()
             if len(cbs) > 0:
                 for cb in cbs:
                     if ret_arg:
@@ -231,6 +232,11 @@ class EventDispatcher:
 
         if Event.MOUSE_WHEEL in self.callbacks:
             self.get_mouse_wheel_info()
+
+        if Event.SOLDAT_BRIDGE_COLLAPSE in self.callbacks:
+            intact = self.soldat_bridge.read(0x00400000, 3) == b"MZP"
+            if not intact:
+                self.__dispatch(Event.SOLDAT_BRIDGE_COLLAPSE)
 
     def pynput_on_keyboard_down(self, key):
         if Event.KEYBOARD_KEYDOWN in self.callbacks:
