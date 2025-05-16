@@ -15,6 +15,9 @@ from soldat_extmod_api.interprocess_utils.game_addresses import addresses
 from soldat_extmod_api.event_dispatcher import Event, EventDispatcher, Callable
 from soldat_extmod_api.graphics_helper.gui_addon import Frame
 from soldat_extmod_api.camera_helper.camera_manager import CameraManager
+from soldat_extmod_api.graphics_helper.gl_constants import ShaderType, ShaderLayer
+from soldat_extmod_api.graphics_helper.shader import Shader
+from soldat_extmod_api.graphics_helper.shader_program import ShaderProgram
 import logging
 
 logging.basicConfig(
@@ -44,6 +47,9 @@ class ModAPI(metaclass=Singleton):
         self.event_dispatcher.set_own_player(self.get_player(self.get_own_id()))
         self.frame = Frame()
         self.camera_manager = CameraManager(self)
+        self.frambuffers_initialized = False
+        self.subscribe_event(self.__initialize_fbos, Event.DIRECTX_READY)
+        self.subscribe_event(self.__bridge_collapse, Event.SOLDAT_BRIDGE_COLLAPSE)
     
     # ======== Graphics related methods
 
@@ -119,6 +125,44 @@ class ModAPI(metaclass=Singleton):
         '''
         self.graphics_manager.DisableDrawing()
 
+    def create_shader(self, shader_type: ShaderType, shader_source) -> Shader | None:
+        '''Compiles shader source'''
+        return self.graphics_manager.CreateShader(shader_type, shader_source)
+
+    def gl_create_shader_program(self) -> int:
+        return self.graphics_manager.CreateShaderProgram()
+
+    def create_shader_program(self, 
+                              layer: ShaderLayer, 
+                              fragment_shader_source: str, 
+                              vertex_shader_source: str) -> ShaderProgram:
+        return ShaderProgram(self, layer, fragment_shader_source, vertex_shader_source)
+
+    def gl_attach_shader(self, shader: Shader, program_handle: int):
+        self.graphics_manager.AttachShader(shader, program_handle)
+
+    def gl_link_program(self, program_handle: int):
+        self.graphics_manager.LinkProgram(program_handle)
+    
+    def gl_resolve_uniform_locations(self, uniforms: dict[str, str], program_handle: int):
+        locations = {}
+        for uniform in uniforms.keys():
+            locations[uniform] = self.graphics_manager.GetUniformLocation(uniform, program_handle)
+        return locations
+
+    def create_frame_buffer(self) -> int:
+        result = self.graphics_manager.CreateFrameBuffer()
+        if result != 0:
+            fbo_addresses = self.graphics_patcher.framebuffer_addresses
+            fbo_count = int.from_bytes(
+                self.soldat_bridge.read(fbo_addresses, 4),
+                "little",
+                signed=False
+            )
+            self.soldat_bridge.write(fbo_addresses + (fbo_count * 4) + 4, result.to_bytes(4, "little"))
+            self.soldat_bridge.write(fbo_addresses, (fbo_count+1).to_bytes(4, "little", signed=False))
+        return result
+
     # ======== GUI methods
     
     def get_gui_frame(self) -> Frame:
@@ -175,3 +219,16 @@ class ModAPI(metaclass=Singleton):
 
     def set_camera_position(self, position: Vector2D):
         self.camera_manager.set_cam_pos(position)
+
+    # ======== Privates
+
+    def __initialize_fbos(self):
+        for _ in range(8):
+            self.create_frame_buffer()
+        self.frambuffers_initialized = True
+        logging.info("Shaders: created 8 frame buffers.")
+        self.unsubscribe_event(self.__initialize_fbos, Event.DIRECTX_READY)
+
+    def __bridge_collapse(self):
+        logging.fatal("Soldat bridge collapsed, terminating.")
+        exit(1)

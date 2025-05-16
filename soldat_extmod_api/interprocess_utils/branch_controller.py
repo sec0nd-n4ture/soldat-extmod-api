@@ -10,6 +10,24 @@ class BranchController:
     def set_texturefunc_flag(self):
         self.soldat_bridge.write(self.sm.get_addr_flagtexturefunc, b"\x01")
 
+    def set_createshader_flag(self):
+        self.soldat_bridge.write(self.sm.get_addr_flagshadercreate, b"\x01")
+
+    def set_createprog_flag(self):
+        self.soldat_bridge.write(self.sm.get_addr_flagprogcreate, b"\x01")
+
+    def set_attachshader_flag(self):
+        self.soldat_bridge.write(self.sm.get_addr_flagattachshader, b"\x01")
+
+    def set_linkprogram_flag(self):
+        self.soldat_bridge.write(self.sm.get_addr_flaglinkprogram, b"\x01")
+
+    def set_createfbo_flag(self):
+        self.soldat_bridge.write(self.sm.get_addr_flagcreatefbo, b"\x01")
+
+    def set_uniform_location_flag(self):
+        self.soldat_bridge.write(self.sm.get_addr_flag_uniform, b"\x01")
+
     def enable_draw_loop(self):
         self.soldat_bridge.write(self.sm.get_addr_flagdrawloop, b"\x01")
 

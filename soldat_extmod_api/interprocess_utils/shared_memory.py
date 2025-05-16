@@ -2,7 +2,7 @@ from win32.lib.win32con import MEM_COMMIT, MEM_RESERVE, PAGE_READWRITE
 import json
 
 SERIAL_FILE_NAME = "sharedmemory.json"
-SHARED_MEMORY_DEFAULT_SIZE = 0x38
+SHARED_MEMORY_DEFAULT_SIZE = 0x68
 
 '''
 SharedMemory structure:
@@ -20,6 +20,17 @@ SharedMemory structure:
     0x2C DWORD image width
     0x30 DWORD flow GfxCreateTexture flag
     0x34 DWORD flow GfxDrawSprite flag
+    0x38 DWORD flow CreateShader flag
+    0x3C DWORD pointer to shader source
+    0x40 DWORD shader type
+    0x44 DWORD flow pglCreateProgram flag
+    0x48 DWORD shader handle
+    0x4C DWORD prog handle
+    0x50 DWORD flow pglAttachShader flag
+    0x54 DWORD flow pglLinkProgram flag
+    0x5C DWORD flow CreateFrameBuffer flag
+    0x58 DWORD ptr uniform name
+    0x6C DWORD flow pglGetUniformLocation
 '''
 
 class SharedMemory:
@@ -56,8 +67,19 @@ class SharedMemory:
         self.sm_symbol_table["mem_shrd_redir_flag"] = self.get_addr_flagredir
         self.sm_symbol_table["flag_draw_loop"] = self.get_addr_flagdrawloop
         self.sm_symbol_table["flag_texture_func"] = self.get_addr_flagtexturefunc
+        self.sm_symbol_table["flag_shadercreate_func"] = self.get_addr_flagshadercreate
+        self.sm_symbol_table["flag_progcreate_func"] = self.get_addr_flagprogcreate
+        self.sm_symbol_table["flag_attachshader_func"] = self.get_addr_flagattachshader
+        self.sm_symbol_table["flag_linkprog_func"] = self.get_addr_flaglinkprogram
+        self.sm_symbol_table["flag_fbocreate_func"] = self.get_addr_flagcreatefbo
+        self.sm_symbol_table["flag_getuniformloc_func"] = self.get_addr_flag_uniform
         self.sm_symbol_table["ptr_ret_save"] = self.get_addr_returnval
         self.sm_symbol_table["ptr_image"] = self.get_addr_imageptr
+        self.sm_symbol_table["ptr_shadertype"] = self.get_addr_shader_type
+        self.sm_symbol_table["ptr_shadersource"] = self.get_addr_shader_source
+        self.sm_symbol_table["ptr_uniformname"] = self.get_addr_uniform_name
+        self.sm_symbol_table["ptr_proghandle"] = self.get_addr_prog_handle
+        self.sm_symbol_table["ptr_shaderhandle"] = self.get_addr_shader_handle
         self.sm_symbol_table["ptr_imagecompr"] = self.get_addr_imagecompr
         self.sm_symbol_table["ptr_imageheight"] = self.get_addr_imageheight
         self.sm_symbol_table["ptr_imagewidth"] = self.get_addr_imagewidth
@@ -67,7 +89,7 @@ class SharedMemory:
         self.sm_symbol_table["ptr_esp_save"] = self.get_savestate("ESP")
         self.sm_symbol_table["ptr_esi_save"] = self.get_savestate("ESI")
         self.sm_symbol_table["ptr_edi_save"] = self.get_savestate("EDI")
-        
+
     def __str__(self) -> str:
         full_read = self.soldat_bridge.read(self.address, self.size).hex()
         ret = f"Shared Memory @ {hex(self.address)}\n" 
@@ -82,7 +104,51 @@ class SharedMemory:
     @property
     def get_addr_flagredir(self):
         return self.address
-    
+
+    @property
+    def get_addr_shader_type(self):
+        return self.address + 0x40
+
+    @property
+    def get_addr_shader_source(self):
+        return self.address + 0x3C
+
+    @property
+    def get_addr_prog_handle(self):
+        return self.address + 0x4C
+
+    @property
+    def get_addr_shader_handle(self):
+        return self.address + 0x48
+
+    @property
+    def get_addr_flagshadercreate(self):
+        return self.address + 0x38
+
+    @property
+    def get_addr_flagprogcreate(self):
+        return self.address + 0x44
+
+    @property
+    def get_addr_flagattachshader(self):
+        return self.address + 0x50
+
+    @property
+    def get_addr_flaglinkprogram(self):
+        return self.address + 0x54
+
+    @property
+    def get_addr_flagcreatefbo(self):
+        return self.address + 0x5C
+
+    @property
+    def get_addr_uniform_name(self):
+        return self.address + 0x58
+
+    @property
+    def get_addr_flag_uniform(self):
+        return self.address + 0x6C
+
     @property
     def get_addr_flagdrawloop(self):
         return self.address + 0x34
@@ -129,6 +195,37 @@ class SharedMemory:
 
     def push_imagecompr(self, compression: bytes):
         self.soldat_bridge.write(self.get_addr_imagecompr, compression)
+
+    def push_shader_source(self, source: str) -> int:
+        src = source.encode()+b"\x00"
+        addr = self.soldat_bridge.allocate_memory(
+            len(src)+8,
+            MEM_COMMIT | MEM_RESERVE,
+            PAGE_READWRITE
+        )
+        self.soldat_bridge.write(addr, b"\x01\x00\x00\x00"+len(src).to_bytes(4, "little") + src)
+        self.soldat_bridge.write(self.get_addr_shader_source, (addr+8).to_bytes(4, "little"))
+        return addr
+
+    def push_uniform_name(self, uniform: str) -> int:
+        uform = uniform.encode()+b"\x00"
+        addr = self.soldat_bridge.allocate_memory(
+            len(uform)+8,
+            MEM_COMMIT | MEM_RESERVE,
+            PAGE_READWRITE
+        )
+        self.soldat_bridge.write(addr, b"\x01\x00\x00\x00"+len(uform).to_bytes(4, "little") + uform)
+        self.soldat_bridge.write(self.get_addr_uniform_name, (addr+8).to_bytes(4, "little"))
+        return addr
+
+    def push_shader_type(self, shader_type: int):
+        self.soldat_bridge.write(self.get_addr_shader_type, shader_type.to_bytes(4, "little"))
+
+    def push_shader_handle(self, shader_handle: int):
+        self.soldat_bridge.write(self.get_addr_shader_handle, shader_handle.to_bytes(4, "little"))
+
+    def push_prog_handle(self, prog_handle: int):
+        self.soldat_bridge.write(self.get_addr_prog_handle, prog_handle.to_bytes(4, "little"))
 
     def as_bytes(self, f, arg=None) -> bytes:
         if arg:
