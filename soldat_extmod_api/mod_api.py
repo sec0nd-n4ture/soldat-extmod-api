@@ -150,6 +150,16 @@ class ModAPI(metaclass=Singleton):
             locations[uniform] = self.graphics_manager.GetUniformLocation(uniform, program_handle)
         return locations
 
+    def gl_uniform1f(self, shader_program: ShaderProgram, uniform_name: str, f1: float):
+        location = shader_program.uniform_location_by_name(uniform_name)
+        if location:
+            self.graphics_manager.SetUniform1f(shader_program.program_handle, location, f1)
+
+    def gl_uniform2f(self, shader_program: ShaderProgram, uniform_name: str, f1: float, f2: float):
+        location = shader_program.uniform_location_by_name(uniform_name)
+        if location:
+            self.graphics_manager.SetUniform2f(shader_program.program_handle, location, f1, f2)
+
     def create_frame_buffer(self) -> int:
         result = self.graphics_manager.CreateFrameBuffer()
         if result != 0:

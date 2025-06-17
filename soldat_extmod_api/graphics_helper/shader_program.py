@@ -33,8 +33,8 @@ class ShaderProgram:
 
         shader_addresses = self.api.graphics_patcher.shader_addresses
         count = int.from_bytes(self.api.soldat_bridge.read(shader_addresses, 4), "little", signed=False)
-        self.base_address = shader_addresses + (count * 24) + 4
-        self.api.soldat_bridge.write(self.base_address, self.to_bytes()+b"\xFF"*12)
+        self.base_address = shader_addresses + (count * 28) + 4
+        self.api.soldat_bridge.write(self.base_address, self.to_bytes()+b"\xFF"*16)
         self.api.soldat_bridge.write(shader_addresses, (count+1).to_bytes(4, "little", signed=False))
 
     def to_bytes(self):
@@ -65,13 +65,29 @@ class ShaderProgram:
         self.api.soldat_bridge.write(self.base_address+6, handle.to_bytes(4, "little", signed=False))
         self.program_handle = handle
 
-    def bind_time_uniform(self, uniform_name: str):
+    def uniform_location_by_name(self, uniform_name: str):
         if self.locations and uniform_name in self.locations:
-            uniform_location = self.locations[uniform_name]
-            self.api.soldat_bridge.write(self.base_address+10, uniform_location)
+            return self.locations[uniform_name]
+
+    def bind_time_uniform(self, uniform_name: str):
+        location = self.uniform_location_by_name(uniform_name)
+        if location:
+            self.api.soldat_bridge.write(self.base_address+10, location)
 
     def bind_velocity_uniform(self, uniform_name: str, velocity_addr: int):
-        if self.locations and uniform_name in self.locations:
-            uniform_location = self.locations[uniform_name]
+        location = self.uniform_location_by_name(uniform_name)
+        if location:
             self.api.soldat_bridge.write(self.base_address+18, velocity_addr.to_bytes(4, "little"))
-            self.api.soldat_bridge.write(self.base_address+14, uniform_location)
+            self.api.soldat_bridge.write(self.base_address+14, location)
+
+    def bind_camera_pos_uniform(self, uniform_name: str):
+        location = self.uniform_location_by_name(uniform_name)
+        if location:
+            self.api.soldat_bridge.write(self.base_address+22, location)
+
+    def set_uniform1f(self, uniform_name: str, f1: float):
+        self.api.gl_uniform1f(self, uniform_name, f1)
+
+    def set_uniform2f(self, uniform_name: str, f1: float, f2: float):
+        self.api.gl_uniform2f(self, uniform_name, f1, f2)
+

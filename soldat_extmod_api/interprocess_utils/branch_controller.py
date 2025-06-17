@@ -28,6 +28,9 @@ class BranchController:
     def set_uniform_location_flag(self):
         self.soldat_bridge.write(self.sm.get_addr_flag_uniform, b"\x01")
 
+    def set_uniformf_flag(self):
+        self.soldat_bridge.write(self.sm.get_addr_flaguniformf, b"\x01")
+
     def enable_draw_loop(self):
         self.soldat_bridge.write(self.sm.get_addr_flagdrawloop, b"\x01")
 

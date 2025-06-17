@@ -1,8 +1,9 @@
 from win32.lib.win32con import MEM_COMMIT, MEM_RESERVE, PAGE_READWRITE
+from struct import pack
 import json
 
 SERIAL_FILE_NAME = "sharedmemory.json"
-SHARED_MEMORY_DEFAULT_SIZE = 0x68
+SHARED_MEMORY_DEFAULT_SIZE = 0x78
 
 '''
 SharedMemory structure:
@@ -28,9 +29,13 @@ SharedMemory structure:
     0x4C DWORD prog handle
     0x50 DWORD flow pglAttachShader flag
     0x54 DWORD flow pglLinkProgram flag
-    0x5C DWORD flow CreateFrameBuffer flag
     0x58 DWORD ptr uniform name
-    0x6C DWORD flow pglGetUniformLocation
+    0x5C DWORD flow CreateFrameBuffer flag
+    0x60 DWORD flow pglGetUniformLocation
+    0x64 DWORD uniform location
+    0x68 DWORD ptr float swizzle
+    0x6C DWORD swizzle count
+    0x70 DWORD flow glUniformf
 '''
 
 class SharedMemory:
@@ -73,6 +78,10 @@ class SharedMemory:
         self.sm_symbol_table["flag_linkprog_func"] = self.get_addr_flaglinkprogram
         self.sm_symbol_table["flag_fbocreate_func"] = self.get_addr_flagcreatefbo
         self.sm_symbol_table["flag_getuniformloc_func"] = self.get_addr_flag_uniform
+        self.sm_symbol_table["flag_setuniformf_func"] = self.get_addr_flaguniformf
+        self.sm_symbol_table["swizzle_count"] = self.get_addr_swizzle_count
+        self.sm_symbol_table["ptr_float_swizzle"] = self.get_addr_float_swizzle
+        self.sm_symbol_table["uniform_location"] = self.get_addr_uniform_location
         self.sm_symbol_table["ptr_ret_save"] = self.get_addr_returnval
         self.sm_symbol_table["ptr_image"] = self.get_addr_imageptr
         self.sm_symbol_table["ptr_shadertype"] = self.get_addr_shader_type
@@ -144,10 +153,26 @@ class SharedMemory:
     @property
     def get_addr_uniform_name(self):
         return self.address + 0x58
+    
+    @property
+    def get_addr_uniform_location(self):
+        return self.address + 0x64
+
+    @property
+    def get_addr_float_swizzle(self):
+        return self.address + 0x68
+
+    @property
+    def get_addr_swizzle_count(self):
+        return self.address + 0x6C
+
+    @property
+    def get_addr_flaguniformf(self):
+        return self.address + 0x70
 
     @property
     def get_addr_flag_uniform(self):
-        return self.address + 0x6C
+        return self.address + 0x60
 
     @property
     def get_addr_flagdrawloop(self):
@@ -226,6 +251,19 @@ class SharedMemory:
 
     def push_prog_handle(self, prog_handle: int):
         self.soldat_bridge.write(self.get_addr_prog_handle, prog_handle.to_bytes(4, "little"))
+
+    def push_uniform_location(self, uniform_location: bytes):
+        self.soldat_bridge.write(self.get_addr_uniform_location, uniform_location)
+
+    def push_float_swizzle(self, floats: tuple[float]):
+        floats_swizzle = b"".join(pack("f", f) for f in floats)
+        if not hasattr(self, "swizzle_memory_addr"):
+            self.swizzle_memory_addr = self.soldat_bridge.read(self.get_addr_float_swizzle, 4)
+            self.swizzle_memory_addr = int.from_bytes(self.swizzle_memory_addr, "little")
+        self.soldat_bridge.write(self.swizzle_memory_addr, floats_swizzle)
+
+    def push_swizzle_count(self, count: int):
+        self.soldat_bridge.write(self.get_addr_swizzle_count, (count - 1).to_bytes(4, "little"))
 
     def as_bytes(self, f, arg=None) -> bytes:
         if arg:

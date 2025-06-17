@@ -12,9 +12,9 @@ mov ebx, ptr_shader_array
 iter_shaders:
     test ecx, ecx
     jz combine_framebuffers
-    mov eax, 0x18
+    mov eax, 0x1A
     imul eax, ecx
-    sub eax, 0x18
+    sub eax, 0x1A
     add eax, ebx
     dec ecx
     xor edx, edx
@@ -138,9 +138,9 @@ IterPostprocessShaders:
     iter_post_proc_shaders:
         test ecx, ecx
         jz exit
-        mov eax, 0x18
+        mov eax, 0x1A
         imul eax, ecx
-        sub eax, 0x18
+        sub eax, 0x1A
         add eax, ebx
         dec ecx
         xor edx, edx
@@ -184,6 +184,12 @@ ApplyShader:
     update_velocity:
         call UpdateVelocityUniform
     no_velocity_update:
+        mov ecx, dword ptr ds:[ebx+8]
+        cmp ecx, 0xFFFFFFFF
+        je no_camera_pos_update
+    camera_pos_update:
+        call UpdateCameraPos
+    no_camera_pos_update:
         call GfxBegin
         pop edx
         mov eax, dword ptr ds:[background_fbo+edx*4]
@@ -226,6 +232,14 @@ UpdateVelocityUniform:
     mov ebx, dword ptr ds:[ebx+4]
     push dword ptr ds:[ebx+4]
     push dword ptr ds:[ebx]
+    push ecx
+    mov eax, dword ptr ds:[glUniform2f]
+    call eax
+    ret
+
+UpdateCameraPos:
+    push dword ptr ds:[camera_world_pos_y]
+    push dword ptr ds:[camera_world_pos_x]
     push ecx
     mov eax, dword ptr ds:[glUniform2f]
     call eax
