@@ -57,6 +57,9 @@ class Vector2D:
     def from_bytes(cls, vector2d_bytes: bytes):
         return cls(*unpack("ff", vector2d_bytes))
 
+    def to_tuple(self) -> tuple[float]:
+        return (self.x, self.y)
+
 class Vector2Ds:
     def __init__(self, x: int, y: int):
         self.x = x
@@ -109,6 +112,9 @@ class Vector2Ds:
     @classmethod
     def zero(cls):
         return cls(0, 0)
+
+    def to_tuple(self) -> tuple[int]:
+        return (self.x, self.y)
 
 class Vector3D:
     def __init__(self, x: float, y: float, z: float):
@@ -163,3 +169,6 @@ class Vector3D:
     @classmethod
     def zero(cls):
         return cls(0.0, 0.0, 0.0)
+
+    def to_tuple(self) -> tuple[float]:
+        return (self.x, self.y, self.z)
