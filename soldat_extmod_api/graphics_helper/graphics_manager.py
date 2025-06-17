@@ -190,3 +190,23 @@ class GraphicsManager:
         while self.soldat_bridge.read(self.shared_graphics_memory.get_addr_flag_uniform, 1) == b"\x01": pass
         location = self.shared_graphics_memory.get_return_value
         return location
+
+    def SetUniform1f(self, program_handle: int, uniform_location, f1: float):
+        self.shared_graphics_memory.push_prog_handle(program_handle)
+        self.shared_graphics_memory.push_uniform_location(uniform_location)
+        self.shared_graphics_memory.push_float_swizzle((f1, )) # not a typo
+        self.shared_graphics_memory.push_swizzle_count(1)
+        self.branch_controller.set_uniformf_flag()
+        self.branch_controller.set_redirect()
+        while self.soldat_bridge.read(self.shared_graphics_memory.get_addr_flaguniformf, 1) == b"\x01": pass
+        return
+
+    def SetUniform2f(self, program_handle: int, uniform_location, f1: float, f2: float):
+        self.shared_graphics_memory.push_prog_handle(program_handle)
+        self.shared_graphics_memory.push_uniform_location(uniform_location)
+        self.shared_graphics_memory.push_float_swizzle((f1, f2))
+        self.shared_graphics_memory.push_swizzle_count(2)
+        self.branch_controller.set_uniformf_flag()
+        self.branch_controller.set_redirect()
+        while self.soldat_bridge.read(self.shared_graphics_memory.get_addr_flaguniformf, 1) == b"\x01": pass
+        return

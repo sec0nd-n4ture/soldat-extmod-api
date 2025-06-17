@@ -128,6 +128,45 @@ get_uniform_location:
     call eax
     mov byte ptr ds:[flag_getuniformloc_func], 0x0
     jmp exit_restore
+set_uniformf:
+    mov dword ptr ds:[ptr_ebx_save], ebx
+    mov dword ptr ds:[ptr_edx_save], edx
+    mov dword ptr ds:[ptr_ebp_save], ebp
+    mov dword ptr ds:[ptr_esp_save], esp
+    mov dword ptr ds:[ptr_esi_save], esi
+    mov dword ptr ds:[ptr_edi_save], edi
+    push dword ptr ds:[ptr_proghandle]
+    mov eax, dword ptr ds:[pglUseProgram]
+    mov eax, dword ptr ds:[eax]
+    call eax
+    mov ebx, dword ptr ds:[swizzle_count]
+    cmp ebx, 0
+    je set_uniform1f
+    cmp ebx, 1
+    je set_uniform2f
+    jmp exit_uniformf_set
+    set_uniform1f:
+        mov eax, dword ptr ds:[ptr_float_swizzle]
+        push dword ptr ds:[eax]
+        push dword ptr ds:[uniform_location]
+        mov eax, dword ptr ds:[glUniform1f]
+        call eax
+        jmp exit_uniformf_set
+    set_uniform2f:
+        mov eax, dword ptr ds:[ptr_float_swizzle]
+        lea eax, dword ptr ds:[eax+ebx*4]
+        push dword ptr ds:[eax]
+        push dword ptr ds:[eax-4]
+        push dword ptr ds:[uniform_location]
+        mov eax, dword ptr ds:[glUniform2f]
+        call eax
+    exit_uniformf_set:
+        push dword ptr ds:[ptr_default_shader_handle]
+        mov eax, dword ptr ds:[pglUseProgram]
+        mov eax, dword ptr ds:[eax]
+        call eax
+        mov byte ptr ds:[flag_setuniformf_func], 0x0
+        jmp exit_restore
 check_moreflags:
     mov al, byte ptr ds:[flag_texture_func]
     cmp al, 0x1
@@ -150,6 +189,9 @@ check_moreflags:
     mov al, byte ptr ds:[flag_getuniformloc_func]
     cmp al, 0x1
     je get_uniform_location
+    mov al, byte ptr ds:[flag_setuniformf_func]
+    cmp al, 0x1
+    je set_uniformf
     mov al, byte ptr ds:[flag_draw_loop]
     cmp al, 0x1
     jne exit_norestore

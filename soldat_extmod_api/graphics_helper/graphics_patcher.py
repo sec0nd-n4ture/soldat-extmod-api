@@ -16,12 +16,14 @@ class GraphicsPatcher:
         self.branch_controller = BranchController(self.shared_memory, mod_api.soldat_bridge)
         self.shared_memory.update(0) # let the class decide the base address
         self.assembler.add_to_symbol_table(self.shared_memory.sm_symbol_table)
+        self.float_swizzle_mem = self.soldat_bridge.allocate_memory(16, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE)
         self.sprite_list_head_ptr = self.soldat_bridge.allocate_memory(4, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE)
         self.text_addresses = self.soldat_bridge.allocate_memory(32768, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE)
         self.framebuffer_addresses = self.soldat_bridge.allocate_memory(32768, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE)
         self.shader_addresses = self.soldat_bridge.allocate_memory(32768, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE)
         self.keypress_buffer_address = self.soldat_bridge.allocate_memory(12, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE)
         self.keypress_buffer_inc_address = self.keypress_buffer_address + 0x4
+        self.soldat_bridge.write(self.shared_memory.get_addr_float_swizzle, self.float_swizzle_mem.to_bytes(4, "little"))
         self.assembler.add_to_symbol_table("keypress_buffer_key", self.keypress_buffer_address)
         self.assembler.add_to_symbol_table("keypress_buffer_inc", self.keypress_buffer_address + 0x4)
         self.assembler.add_to_symbol_table("keypress_buffer_eax", self.keypress_buffer_address + 0x8)
