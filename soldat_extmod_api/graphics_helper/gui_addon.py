@@ -5,6 +5,7 @@ from soldat_extmod_api.graphics_helper.sm_text import InterfaceText
 from soldat_extmod_api.graphics_helper.sm_text import TEXT_MAX_LENGTH
 from soldat_extmod_api.event_dispatcher import Event
 from pynput.keyboard import Key
+import math
 
 
 SLIDER_DEFAULT_COLOR = WHITE
@@ -56,6 +57,115 @@ class Rectangle:
 
     def rect_set_pos(self, pos: Vector2D):
         self.position = pos
+
+
+class DynamicRectangle:
+    def __init__(self, position: Vector2D, dimensions: Vector2D, scale: Vector2D, rotation: float = 0.0, pivot: Vector2D = None):
+        self.position = position
+        self.dimensions = dimensions
+        self.scale = scale
+        self.rotation = rotation
+        if pivot is None:
+            self.pivot = Vector2D(
+                self.position.x + (self.dimensions.x * self.scale.x) / 2,
+                self.position.y + (self.dimensions.y * self.scale.x) / 2
+            )
+        else:
+            self.pivot = pivot
+
+    def contains_point(self, point: Vector2D) -> bool:
+        """
+        Returns True if the point falls within the rectangle, False otherwise.
+        Handles both axis-aligned and rotated rectangles.
+        Position is always top-left. Pivot is relative to top-left.
+        """
+        if self.rotation == 0:
+            # Axis-aligned, X increases right, Y increases downward
+            x = point.x
+            y = point.y
+            return (x >= self.position.x and 
+                    x <= self.position.x + self.dimensions.x * self.scale.x and
+                    y >= self.position.y and 
+                    y <= self.position.y + self.dimensions.y * self.scale.x)
+        else:
+            translated_point = Vector2D(point.x - self.pivot.x, point.y - self.pivot.y)
+            cos_neg = math.cos(self.rotation)
+            sin_neg = math.sin(self.rotation)
+            rotated_point = Vector2D(
+                translated_point.x * cos_neg - translated_point.y * sin_neg,
+                translated_point.x * sin_neg + translated_point.y * cos_neg
+            )
+            local_point = Vector2D(
+                rotated_point.x + self.pivot.x,
+                rotated_point.y + self.pivot.y
+            )
+            return (local_point.x >= self.position.x and 
+                    local_point.x <= self.position.x + self.dimensions.x * self.scale.x and
+                    local_point.y >= self.position.y and 
+                    local_point.y <= self.position.y + self.dimensions.y * self.scale.x)
+
+    def rotate_point(self, point: Vector2D, angle: float, pivot: Vector2D) -> Vector2D:
+        """
+        Rotate a point around a pivot by the given angle (invert direction for Y-down).
+        """
+        translated_point = Vector2D(point.x - pivot.x, point.y - pivot.y)
+        cos_angle = math.cos(-angle)
+        sin_angle = math.sin(-angle)
+        rotated_point = Vector2D(
+            translated_point.x * cos_angle - translated_point.y * sin_angle,
+            translated_point.x * sin_angle + translated_point.y * cos_angle
+        )
+        return Vector2D(rotated_point.x + pivot.x, rotated_point.y + pivot.y)
+
+    def get_corner(self, corner_name: str) -> Vector2D:
+        """
+        Get a specific corner of the rectangle, accounting for rotation.
+        corner_name can be: 'top_left', 'top_right', 'bottom_right', 'bottom_left'
+        Position is always top-left.
+        """
+        base_corners = {
+            'top_left': self.position,
+            'top_right': Vector2D(self.position.x + (self.dimensions.x * self.scale.x), self.position.y),
+            'bottom_right': Vector2D(self.position.x + (self.dimensions.x * self.scale.x), 
+                                   self.position.y + (self.dimensions.y * self.scale.x)),
+            'bottom_left': Vector2D(self.position.x, self.position.y + (self.dimensions.y * self.scale.x))
+        }
+        if corner_name not in base_corners:
+            raise ValueError(f"Invalid corner name: {corner_name}. Must be one of: {list(base_corners.keys())}")
+        base_corner = base_corners[corner_name]
+        if self.rotation == 0:
+            return base_corner
+        else:
+            return self.rotate_point(base_corner, self.rotation, self.pivot)
+
+    def rect_set_pos(self, pos: Vector2D):
+        pivot_offset = Vector2D(
+            self.pivot.x - self.position.x,
+            self.pivot.y - self.position.y
+        )
+        self.position = pos
+        self.pivot = Vector2D(
+            pos.x + pivot_offset.x,
+            pos.y + pivot_offset.y
+        )
+
+    def set_rotation(self, rotation: float):
+        """
+        Set the rotation angle in radians.
+        """
+        self.rotation = rotation
+
+    def set_pivot(self, pivot: Vector2D):
+        """
+        Set the pivot point for rotation.
+        """
+        self.pivot = pivot
+
+    def rotate(self, angle: float):
+        """
+        Rotate the rectangle by the given angle (in radians) around the current pivot.
+        """
+        self.rotation += angle
 
 class Frame:
     def __init__(self, width: int = 853, height: int = 480, centered: bool = True):
