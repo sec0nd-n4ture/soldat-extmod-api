@@ -33,7 +33,7 @@ class ShaderProgram:
 
         shader_addresses = self.api.graphics_patcher.shader_addresses
         count = int.from_bytes(self.api.soldat_bridge.read(shader_addresses, 4), "little", signed=False)
-        self.base_address = shader_addresses + (count * 28) + 4
+        self.base_address = shader_addresses + (count * 0x1C) + 4
         self.api.soldat_bridge.write(self.base_address, self.to_bytes()+b"\xFF"*16)
         self.api.soldat_bridge.write(shader_addresses, (count+1).to_bytes(4, "little", signed=False))
 

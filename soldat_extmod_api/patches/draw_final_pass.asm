@@ -12,9 +12,9 @@ mov ebx, ptr_shader_array
 iter_shaders:
     test ecx, ecx
     jz combine_framebuffers
-    mov eax, 0x1A
+    mov eax, 0x1C
     imul eax, ecx
-    sub eax, 0x1A
+    sub eax, 0x1C
     add eax, ebx
     dec ecx
     xor edx, edx
@@ -138,9 +138,9 @@ IterPostprocessShaders:
     iter_post_proc_shaders:
         test ecx, ecx
         jz exit
-        mov eax, 0x1A
+        mov eax, 0x1C
         imul eax, ecx
-        sub eax, 0x1A
+        sub eax, 0x1C
         add eax, ebx
         dec ecx
         xor edx, edx
