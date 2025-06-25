@@ -234,7 +234,7 @@ class EventDispatcher:
             self.get_mouse_wheel_info()
 
         if Event.SOLDAT_BRIDGE_COLLAPSE in self.callbacks:
-            intact = self.soldat_bridge.read(0x00400000, 3) == b"MZP"
+            intact = self.soldat_bridge.read(0x00400000, 2) == b"MZ"
             if not intact:
                 self.__dispatch(Event.SOLDAT_BRIDGE_COLLAPSE)
 
