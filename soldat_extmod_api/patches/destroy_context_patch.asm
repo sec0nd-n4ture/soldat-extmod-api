@@ -8,17 +8,29 @@ mov dword ptr ds:[ic_ptr_esi_save], esi
 mov dword ptr ds:[ic_ptr_edi_save], edi
 
 mov esi, dword ptr ds:[ptr_framebuffer_count]
-cmp esi, 0
-jz execute_stolen
+test esi, esi
+jz free_vertex_buffers
 mov ebx, ptr_framebuffer_array
 fbo_iter_next:
     lea eax, dword ptr ds:[ebx+esi*4-4]
     call GfxDeleteTexture
     dec esi
     jnz fbo_iter_next
-
 xor eax, eax
 mov dword ptr ds:[ptr_framebuffer_count], eax
+free_vertex_buffers:
+    mov esi, dword ptr ds:[ptr_vertexbuffer_count]
+    test esi, esi
+    jz execute_stolen
+    mov ebx, ptr_vertexbuffer_array
+    vbo_iter_next:
+        lea eax, dword ptr ds:[ebx+esi*4-4]
+        call FreeAndNil
+        dec esi
+        jnz vbo_iter_next
+xor eax, eax
+mov dword ptr ds:[ptr_vertexbuffer_count], eax
+mov dword ptr ds:[wireframe_vbo], eax
 
 execute_stolen:
     mov eax, dword ptr ds:[ic_ptr_eax_save]

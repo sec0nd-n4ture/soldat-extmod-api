@@ -20,6 +20,10 @@ class GraphicsPatcher:
         self.sprite_list_head_ptr = self.soldat_bridge.allocate_memory(4, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE)
         self.text_addresses = self.soldat_bridge.allocate_memory(32768, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE)
         self.framebuffer_addresses = self.soldat_bridge.allocate_memory(32768, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE)
+        self.vertexbuffer_addresses = self.soldat_bridge.allocate_memory(32768, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE)
+        self.map_vertexdata_address = self.soldat_bridge.allocate_memory(4, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE)
+        self.map_vertexdatasize_address = self.soldat_bridge.allocate_memory(4, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE)
+        self.wireframe_vbo_address = self.soldat_bridge.allocate_memory(4, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE)
         self.shader_addresses = self.soldat_bridge.allocate_memory(32768, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE)
         self.keypress_buffer_address = self.soldat_bridge.allocate_memory(12, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE)
         self.keypress_buffer_inc_address = self.keypress_buffer_address + 0x4
@@ -34,6 +38,11 @@ class GraphicsPatcher:
         self.assembler.add_to_symbol_table("ptr_shader_array", self.shader_addresses + 0x4)
         self.assembler.add_to_symbol_table("ptr_framebuffer_count", self.framebuffer_addresses)
         self.assembler.add_to_symbol_table("ptr_framebuffer_array", self.framebuffer_addresses + 0x4)
+        self.assembler.add_to_symbol_table("ptr_vertexbuffer_count", self.vertexbuffer_addresses)
+        self.assembler.add_to_symbol_table("ptr_vertexbuffer_array", self.vertexbuffer_addresses + 0x4)
+        self.assembler.add_to_symbol_table("map_vbo_ptr", self.map_vertexdata_address)
+        self.assembler.add_to_symbol_table("map_vbosize_ptr", self.map_vertexdatasize_address)
+        self.assembler.add_to_symbol_table("wireframe_vbo", self.wireframe_vbo_address)
         self.assembler.add_to_symbol_table("RIhookContinue", addresses[self.soldat_bridge.executable_hash]["RenderInterface"] + 0x8)
         self.assembler.add_to_symbol_table("FormKeyPressContinue", addresses[self.soldat_bridge.executable_hash]["FormKeyPress"] + 0x7)
         module_dir = os.path.dirname(os.path.realpath(__file__))
@@ -95,22 +104,25 @@ class GraphicsPatcher:
         self.patcher.patch(os.path.join(self.patches_dir, "draw_hijack_props2.asm"), "RF_RenderProps2", 0)
         self.patcher.patch(os.path.join(self.patches_dir, "draw_hijack_interface.asm"), "RF_RenderInterface", 0)
         self.patcher.patch(os.path.join(self.patches_dir, "draw_final_pass.asm"), "RF_FBOCombination", 0)
+        self.patcher.patch(os.path.join(self.patches_dir, "map_vbo_hook.asm"), "MapVBOHook", 0)
 
     # TODO: generalize SharedMemory for shaders
     def __generate_shader_patch_symbols(self):
-        patch_shared_mem = self.soldat_bridge.allocate_memory(
-            32,
+        self.patch_shared_mem = self.soldat_bridge.allocate_memory(
+            1024,
             MEM_COMMIT | MEM_RESERVE,
             PAGE_READWRITE
         )
-        self.assembler.add_to_symbol_table("ic_ptr_eax_save", patch_shared_mem)
-        self.assembler.add_to_symbol_table("ic_ptr_ebx_save", patch_shared_mem+4)
-        self.assembler.add_to_symbol_table("ic_ptr_edx_save", patch_shared_mem+8)
-        self.assembler.add_to_symbol_table("ic_ptr_ebp_save", patch_shared_mem+12)
-        self.assembler.add_to_symbol_table("ic_ptr_esp_save", patch_shared_mem+16)
-        self.assembler.add_to_symbol_table("ic_ptr_esi_save", patch_shared_mem+20)
-        self.assembler.add_to_symbol_table("ic_ptr_edi_save", patch_shared_mem+24)
-        self.assembler.add_to_symbol_table("ic_ptr_ecx_save", patch_shared_mem+28)
+        self.assembler.add_to_symbol_table("ic_ptr_eax_save", self.patch_shared_mem)
+        self.assembler.add_to_symbol_table("ic_ptr_ebx_save", self.patch_shared_mem+4)
+        self.assembler.add_to_symbol_table("ic_ptr_edx_save", self.patch_shared_mem+8)
+        self.assembler.add_to_symbol_table("ic_ptr_ebp_save", self.patch_shared_mem+12)
+        self.assembler.add_to_symbol_table("ic_ptr_esp_save", self.patch_shared_mem+16)
+        self.assembler.add_to_symbol_table("ic_ptr_esi_save", self.patch_shared_mem+20)
+        self.assembler.add_to_symbol_table("ic_ptr_edi_save", self.patch_shared_mem+24)
+        self.assembler.add_to_symbol_table("ic_ptr_ecx_save", self.patch_shared_mem+28)
+        self.assembler.add_to_symbol_table("draw_polygon_wireframe_flag", self.patch_shared_mem+32)
+        self.assembler.add_to_symbol_table("disable_poly_texture_flag", self.patch_shared_mem+36)
         self.assembler.add_to_symbol_table("background_fbo", self.framebuffer_addresses+4)
         self.assembler.add_to_symbol_table("props_fbo0", self.framebuffer_addresses+8)
         self.assembler.add_to_symbol_table("players_fbo", self.framebuffer_addresses+12)
@@ -119,6 +131,7 @@ class GraphicsPatcher:
         self.assembler.add_to_symbol_table("props_fbo2", self.framebuffer_addresses+24)
         self.assembler.add_to_symbol_table("interface_fbo", self.framebuffer_addresses+28)
         self.assembler.add_to_symbol_table("final_pass_fbo", self.framebuffer_addresses+32)
+        self.assembler.add_to_symbol_table("poly_wireframe_fbo", self.framebuffer_addresses+36)
         self.assembler.add_to_symbol_table("IC_branch_1", 0x00508988)
         self.assembler.add_to_symbol_table("IC_continue", 0x005088E4)
         self.assembler.add_to_symbol_table("DC_continue", 0x00508B21)

@@ -3,7 +3,7 @@ from struct import pack
 import json
 
 SERIAL_FILE_NAME = "sharedmemory.json"
-SHARED_MEMORY_DEFAULT_SIZE = 0x78
+SHARED_MEMORY_DEFAULT_SIZE = 0x88
 
 '''
 SharedMemory structure:
@@ -36,6 +36,10 @@ SharedMemory structure:
     0x68 DWORD ptr float swizzle
     0x6C DWORD swizzle count
     0x70 DWORD flow glUniformf
+    0x74 DWORD flow CreateVertexBuffer flag
+    0x78 DWORD vbo size
+    0x7C DWORD bool is vbo static
+    0x80 DWORD pointer to vbo data
 '''
 
 class SharedMemory:
@@ -77,6 +81,7 @@ class SharedMemory:
         self.sm_symbol_table["flag_attachshader_func"] = self.get_addr_flagattachshader
         self.sm_symbol_table["flag_linkprog_func"] = self.get_addr_flaglinkprogram
         self.sm_symbol_table["flag_fbocreate_func"] = self.get_addr_flagcreatefbo
+        self.sm_symbol_table["flag_vbocreate_func"] = self.get_addr_flagcreatevbo
         self.sm_symbol_table["flag_getuniformloc_func"] = self.get_addr_flag_uniform
         self.sm_symbol_table["flag_setuniformf_func"] = self.get_addr_flaguniformf
         self.sm_symbol_table["swizzle_count"] = self.get_addr_swizzle_count
@@ -92,6 +97,9 @@ class SharedMemory:
         self.sm_symbol_table["ptr_imagecompr"] = self.get_addr_imagecompr
         self.sm_symbol_table["ptr_imageheight"] = self.get_addr_imageheight
         self.sm_symbol_table["ptr_imagewidth"] = self.get_addr_imagewidth
+        self.sm_symbol_table["ptr_vbodata"] = self.get_addr_vbodata
+        self.sm_symbol_table["ptr_vbostatic"] = self.get_addr_vbostatic
+        self.sm_symbol_table["ptr_vbosize"] = self.get_addr_vbosize
         self.sm_symbol_table["ptr_ebx_save"] = self.get_savestate("EBX")
         self.sm_symbol_table["ptr_edx_save"] = self.get_savestate("EDX")
         self.sm_symbol_table["ptr_ebp_save"] = self.get_savestate("EBP")
@@ -149,6 +157,22 @@ class SharedMemory:
     @property
     def get_addr_flagcreatefbo(self):
         return self.address + 0x5C
+
+    @property
+    def get_addr_flagcreatevbo(self):
+        return self.address + 0x74
+
+    @property
+    def get_addr_vbosize(self):
+        return self.address + 0x78
+
+    @property
+    def get_addr_vbostatic(self):
+        return self.address + 0x7C
+
+    @property
+    def get_addr_vbodata(self):
+        return self.address + 0x80
 
     @property
     def get_addr_uniform_name(self):
@@ -264,6 +288,15 @@ class SharedMemory:
 
     def push_swizzle_count(self, count: int):
         self.soldat_bridge.write(self.get_addr_swizzle_count, (count - 1).to_bytes(4, "little"))
+
+    def push_vbo_size(self, size: int):
+        self.soldat_bridge.write(self.get_addr_vbosize, size.to_bytes(4, "little"))
+
+    def push_vbo_is_static(self, is_static: bool):
+        self.soldat_bridge.write(self.get_addr_vbostatic, is_static.to_bytes(4, "little"))
+
+    def push_vbo_dataptr(self, ptr: bytes):
+        self.soldat_bridge.write(self.get_addr_vbodata, ptr)
 
     def as_bytes(self, f, arg=None) -> bytes:
         if arg:

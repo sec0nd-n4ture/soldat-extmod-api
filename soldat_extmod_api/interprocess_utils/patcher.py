@@ -13,11 +13,13 @@ class Patcher:
         rtexu_offset = self.soldat_bridge.get_proc_offset(r"C:\Windows\SysWOW64\ntdll.dll", "RtlExitUserThread")
         memcpy_offset = self.soldat_bridge.get_proc_offset(r"C:\Windows\SysWOW64\ntdll.dll", "memcpy")
         virtualalloc_offset = self.soldat_bridge.get_proc_offset(r"C:\Windows\SysWOW64\kernel32.dll", "VirtualAlloc")
+        virtualfree_offset = self.soldat_bridge.get_proc_offset(r"C:\Windows\SysWOW64\kernel32.dll", "VirtualFree")
         self.game_addresses = addresses[exec_hash].copy()
         self.game_addresses["Stbi_load_from_memory"] += self.soldat_bridge.get_module_base("stb.dll")
         self.game_addresses["RtlExitUserThread"] = ntdll_base + rtexu_offset
         self.game_addresses["Memcpy"] = ntdll_base + memcpy_offset
         self.game_addresses["VirtualAlloc"] = kernel32_base + virtualalloc_offset
+        self.game_addresses["VirtualFree"] = kernel32_base + virtualfree_offset
         self.assembler.set_symbol_table(self.game_addresses)
 
 

@@ -182,6 +182,16 @@ class GraphicsManager:
         fbo_addr = self.shared_graphics_memory.get_return_value
         return int.from_bytes(fbo_addr, "little")
 
+    def CreateVertexBuffer(self, vbo_size: int, is_static: bool, vbo_data_ptr: int) -> int:
+        self.shared_graphics_memory.push_vbo_size(vbo_size)
+        self.shared_graphics_memory.push_vbo_is_static(is_static)
+        self.shared_graphics_memory.push_vbo_dataptr(vbo_data_ptr.to_bytes(4, "little"))
+        self.branch_controller.set_createvbo_flag()
+        self.branch_controller.set_redirect()
+        while self.soldat_bridge.read(self.shared_graphics_memory.get_addr_flagcreatevbo, 1) == b"\x01": pass
+        vbo_addr = self.shared_graphics_memory.get_return_value
+        return int.from_bytes(vbo_addr, "little")
+
     def GetUniformLocation(self, uniform: str, program_handle: int) -> int:
         self.shared_graphics_memory.push_prog_handle(program_handle)
         self.shared_graphics_memory.push_uniform_name(uniform)

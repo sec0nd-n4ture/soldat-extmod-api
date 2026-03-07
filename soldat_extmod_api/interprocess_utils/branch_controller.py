@@ -25,6 +25,9 @@ class BranchController:
     def set_createfbo_flag(self):
         self.soldat_bridge.write(self.sm.get_addr_flagcreatefbo, b"\x01")
 
+    def set_createvbo_flag(self):
+        self.soldat_bridge.write(self.sm.get_addr_flagcreatevbo, b"\x01")
+
     def set_uniform_location_flag(self):
         self.soldat_bridge.write(self.sm.get_addr_flag_uniform, b"\x01")
 

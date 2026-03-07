@@ -102,6 +102,20 @@ create_frame_buffer:
     mov dword ptr ds:[ptr_ret_save], eax
     mov byte ptr ds:[flag_fbocreate_func], 0x0
     jmp exit_restore
+create_vertex_buffer:
+    mov dword ptr ds:[ptr_ebx_save], ebx
+    mov dword ptr ds:[ptr_edx_save], edx
+    mov dword ptr ds:[ptr_ebp_save], ebp
+    mov dword ptr ds:[ptr_esp_save], esp
+    mov dword ptr ds:[ptr_esi_save], esi
+    mov dword ptr ds:[ptr_edi_save], edi
+    mov eax, dword ptr ds:[ptr_vbosize]
+    mov dl, byte ptr ds:[ptr_vbostatic]
+    mov ecx, dword ptr ds:[ptr_vbodata]
+    call GfxCreateBuffer
+    mov dword ptr ds:[ptr_ret_save], eax
+    mov byte ptr ds:[flag_vbocreate_func], 0x0
+    jmp exit_restore
 get_uniform_location:
     mov dword ptr ds:[ptr_ebx_save], ebx
     mov dword ptr ds:[ptr_edx_save], edx
@@ -186,6 +200,9 @@ check_moreflags:
     mov al, byte ptr ds:[flag_fbocreate_func]
     cmp al, 0x1
     je create_frame_buffer
+    mov al, byte ptr ds:[flag_vbocreate_func]
+    cmp al, 0x1
+    je create_vertex_buffer
     mov al, byte ptr ds:[flag_getuniformloc_func]
     cmp al, 0x1
     je get_uniform_location
