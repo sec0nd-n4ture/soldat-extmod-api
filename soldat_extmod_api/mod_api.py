@@ -18,6 +18,7 @@ from soldat_extmod_api.camera_helper.camera_manager import CameraManager
 from soldat_extmod_api.graphics_helper.gl_constants import ShaderType, ShaderLayer
 from soldat_extmod_api.graphics_helper.shader import Shader
 from soldat_extmod_api.graphics_helper.shader_program import ShaderProgram
+from soldat_extmod_api.graphics_helper.map_graphics_struct import TMapGraphics
 import logging
 
 logging.basicConfig(
@@ -37,6 +38,7 @@ class ModAPI(metaclass=Singleton):
         self._exec_hash = self.soldat_bridge.executable_hash
         self.addresses: dict[str, int] = addresses[self._exec_hash].copy()
         self.addr_mouse_screen_pos = self.addresses["cursor_screen_pos"]
+        self.map_graphics = TMapGraphics(self)
         self.assembler = assembler.Assembler()
         self.patcher: patcher.Patcher = patcher.Patcher(self)
         self.graphics_patcher = GraphicsPatcher(self)
@@ -173,6 +175,19 @@ class ModAPI(metaclass=Singleton):
             self.soldat_bridge.write(fbo_addresses, (fbo_count+1).to_bytes(4, "little", signed=False))
         return result
 
+    def create_vertex_buffer(self, vbo_size: int, is_static: bool, vbo_data_ptr: int) -> int:
+        result = self.graphics_manager.CreateVertexBuffer(vbo_size, is_static, vbo_data_ptr)
+        if result != 0:
+            vbo_addresses = self.graphics_patcher.vertexbuffer_addresses
+            vbo_count = int.from_bytes(
+                self.soldat_bridge.read(vbo_addresses, 4),
+                "little",
+                signed=False
+            )
+            self.soldat_bridge.write(vbo_addresses + (vbo_count * 4) + 4, result.to_bytes(4, "little"))
+            self.soldat_bridge.write(vbo_addresses, (vbo_count+1).to_bytes(4, "little", signed=False))
+        return result
+
     # ======== GUI methods
     
     def get_gui_frame(self) -> Frame:
@@ -186,6 +201,39 @@ class ModAPI(metaclass=Singleton):
     
     def collision_test(self, pos: Vector2D, is_flag : bool = False) -> MapManager.CollisionResult:
         return MapManager.collision_test(self, pos, is_flag)
+
+    def enable_polygon_wireframe(self):
+        self.soldat_bridge.write(self.graphics_patcher.patch_shared_mem+32, b"\x01")
+
+    def disable_polygon_wireframe(self):
+        self.soldat_bridge.write(self.graphics_patcher.patch_shared_mem+32, b"\x00")
+
+    def enable_polygon_textures(self):
+        self.soldat_bridge.write(self.graphics_patcher.patch_shared_mem+36, b"\x00")
+
+    def disable_polygon_textures(self):
+        self.soldat_bridge.write(self.graphics_patcher.patch_shared_mem+36, b"\x01")
+
+    def get_current_map_vertexdata(self) -> bytes:
+        vertexdata_addr = self.soldat_bridge.read(self.graphics_patcher.map_vertexdata_address, 4)
+        vertexdata_addr = int.from_bytes(vertexdata_addr, "little")
+        vbo_size = self.get_current_map_vertexdata_size()
+        return self.soldat_bridge.read(vertexdata_addr, vbo_size)
+
+    def get_current_map_vertexdata_size(self) -> int:
+        vbo_size = int.from_bytes(
+            self.soldat_bridge.read(
+                self.graphics_patcher.map_vertexdatasize_address, 4
+            ),
+            "little"
+        ) * 20 # x y u v rgba = 20
+        return vbo_size
+
+    def set_polygon_wireframe_vbo(self, vbo_address: int):
+        self.soldat_bridge.write(
+            self.graphics_patcher.wireframe_vbo_address,
+            vbo_address.to_bytes(4, "little")
+        )
 
     # ======== Player related methods
 
@@ -233,10 +281,10 @@ class ModAPI(metaclass=Singleton):
     # ======== Privates
 
     def __initialize_fbos(self):
-        for _ in range(8):
+        for _ in range(9):
             self.create_frame_buffer()
         self.frambuffers_initialized = True
-        logging.info("Shaders: created 8 frame buffers.")
+        logging.info("Shaders: created 9 frame buffers.")
         self.unsubscribe_event(self.__initialize_fbos, Event.DIRECTX_READY)
 
     def __bridge_collapse(self):
