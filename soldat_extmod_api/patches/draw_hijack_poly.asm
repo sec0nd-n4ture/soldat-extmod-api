@@ -7,6 +7,54 @@ mov dword ptr ds:[ic_ptr_esp_save], esp
 mov dword ptr ds:[ic_ptr_esi_save], esi
 mov dword ptr ds:[ic_ptr_edi_save], edi
 
+cmp dword ptr ds:[draw_polygon_wireframe_flag], 0
+je no_wireframe
+mov eax, poly_wireframe_fbo
+mov eax, dword ptr ds:[eax]
+cmp eax, 0
+je no_wireframe
+call GfxTarget
+xor eax, eax
+call GfxBindTexture
+push 0x1B01
+push 0x408
+mov eax, dword ptr ds:[glPolygonMode]
+call eax
+push 0
+xor ecx, ecx
+xor edx, edx
+xor eax, eax
+call RGBAOverload2
+call GfxClear
+mov eax, dword ptr ds:[wireframe_vbo]
+cmp dword ptr ds:[wireframe_vbo], 0
+je default_vbo
+mov ecx, dword ptr ss:[ebp-0x8]
+mov edx, dword ptr ds:[ecx+0x9C]
+mov ecx, dword ptr ds:[ecx+0xA0]
+call GfxDraw
+mov eax, dword ptr ds:[wireframe_vbo]
+mov ecx, dword ptr ss:[ebp-0x8]
+mov edx, dword ptr ds:[ecx+0xA4]
+mov ecx, dword ptr ds:[ecx+0xA8]
+jmp draw_wireframe_front
+default_vbo:
+mov eax, dword ptr ss:[ebp-0x8]
+mov ecx, dword ptr ds:[eax+0xA0]
+mov edx, dword ptr ds:[eax+0x9C]
+mov eax, dword ptr ds:[eax+0x10]
+call GfxDraw
+mov eax, dword ptr ss:[ebp-0x8]
+mov ecx, dword ptr ds:[eax+0xA8]
+mov edx, dword ptr ds:[eax+0xA4]
+mov eax, dword ptr ds:[eax+0x10]
+draw_wireframe_front:
+call GfxDraw
+push 0x1B02
+push 0x408
+mov eax, dword ptr ds:[glPolygonMode]
+call eax
+no_wireframe:
 mov eax, poly_fbo
 mov eax, dword ptr ds:[eax]
 cmp eax, 0
@@ -27,6 +75,9 @@ execute_stolen:
     mov esp, dword ptr ds:[ic_ptr_esp_save]
     mov esi, dword ptr ds:[ic_ptr_esi_save]
     mov edi, dword ptr ds:[ic_ptr_edi_save]
+    xor eax, eax
+    cmp dword ptr ds:[disable_poly_texture_flag], 1
+    je  0x005CCB73
     mov eax, dword ptr ss:[ebp-0x8]
     mov eax, dword ptr ds:[eax+0x18]
     jmp 0x005CCB73

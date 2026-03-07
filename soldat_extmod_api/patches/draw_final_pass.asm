@@ -61,6 +61,13 @@ combine_framebuffers:
     mov eax, dword ptr ds:[props_fbo2]
     call DrawFullscreenQuad
     call GfxEnd
+    cmp dword ptr ds:[draw_polygon_wireframe_flag], 0
+    je skip_wireframe
+    call GfxBegin
+    mov eax, dword ptr ds:[poly_wireframe_fbo]
+    call DrawFullscreenQuad
+    call GfxEnd
+    skip_wireframe:
     call IterPostprocessShaders
     call GfxBegin
     mov eax, dword ptr ds:[interface_fbo]
