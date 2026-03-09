@@ -206,24 +206,26 @@ class ImageNode:
             if prev != 0:
                 ImageNode.last_node = prev
                 ImageNode(self.mod_api, base_addr=prev).__set_next(0)
-        
+            else:
+                ImageNode.last_node = None
+
         if is_first_node:
-            next = self.__get_next()
-            if next != 0:
-                ImageNode(self.mod_api, base_addr=next).__set_previous(0)
-    
-            self.soldat_bridge.write(self.mod_api.graphics_patcher.sprite_list_head_ptr, next.to_bytes(4, "little"))
+            nxt = self.__get_next()
+            if nxt != 0:
+                ImageNode(self.mod_api, base_addr=nxt).__set_previous(0)
+            self.soldat_bridge.write(
+                self.mod_api.graphics_patcher.sprite_list_head_ptr,
+                nxt.to_bytes(4, "little")
+            )
 
         if not is_last_node and not is_first_node:
             prev = ImageNode(self.mod_api, base_addr=self.__get_previous())
-            next = ImageNode(self.mod_api, base_addr=self.__get_next())
-
-            prev.__set_next(next.base_addr)
-            next.__set_previous(prev.base_addr)
-
+            nxt = ImageNode(self.mod_api, base_addr=self.__get_next())
+            prev.__set_next(nxt.base_addr)
+            nxt.__set_previous(prev.base_addr)
 
         self.soldat_bridge.free_memory(self.sprite_addr)
         self.soldat_bridge.free_memory(self.base_addr)
-        del self
+
 
 
