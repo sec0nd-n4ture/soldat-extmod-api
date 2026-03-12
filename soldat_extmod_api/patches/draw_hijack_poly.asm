@@ -16,10 +16,13 @@ je no_wireframe
 call GfxTarget
 xor eax, eax
 call GfxBindTexture
+cmp dword ptr ds:[wireframe_mode], 0
+jne fill_mode
 push 0x1B01
 push 0x408
 mov eax, dword ptr ds:[glPolygonMode]
 call eax
+fill_mode:
 push 0
 xor ecx, ecx
 xor edx, edx
@@ -50,6 +53,8 @@ mov edx, dword ptr ds:[eax+0xA4]
 mov eax, dword ptr ds:[eax+0x10]
 draw_wireframe_front:
 call GfxDraw
+cmp dword ptr ds:[wireframe_mode], 0
+jne no_wireframe
 push 0x1B02
 push 0x408
 mov eax, dword ptr ds:[glPolygonMode]
