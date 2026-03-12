@@ -9,6 +9,7 @@ from soldat_extmod_api.soldat_bridge import SoldatBridge
 
 class GraphicsPatcher:
     def __init__(self, mod_api):
+        self.symbol_count = 0
         self.patcher = mod_api.patcher
         self.assembler: Assembler = self.patcher.assembler
         self.soldat_bridge: SoldatBridge = mod_api.soldat_bridge
@@ -113,16 +114,25 @@ class GraphicsPatcher:
             MEM_COMMIT | MEM_RESERVE,
             PAGE_READWRITE
         )
-        self.assembler.add_to_symbol_table("ic_ptr_eax_save", self.patch_shared_mem)
-        self.assembler.add_to_symbol_table("ic_ptr_ebx_save", self.patch_shared_mem+4)
-        self.assembler.add_to_symbol_table("ic_ptr_edx_save", self.patch_shared_mem+8)
-        self.assembler.add_to_symbol_table("ic_ptr_ebp_save", self.patch_shared_mem+12)
-        self.assembler.add_to_symbol_table("ic_ptr_esp_save", self.patch_shared_mem+16)
-        self.assembler.add_to_symbol_table("ic_ptr_esi_save", self.patch_shared_mem+20)
-        self.assembler.add_to_symbol_table("ic_ptr_edi_save", self.patch_shared_mem+24)
-        self.assembler.add_to_symbol_table("ic_ptr_ecx_save", self.patch_shared_mem+28)
-        self.assembler.add_to_symbol_table("draw_polygon_wireframe_flag", self.patch_shared_mem+32)
-        self.assembler.add_to_symbol_table("disable_poly_texture_flag", self.patch_shared_mem+36)
+        self.__add_symbol("ic_ptr_eax_save", self.patch_shared_mem)
+        self.__add_symbol("ic_ptr_ebx_save", self.patch_shared_mem)
+        self.__add_symbol("ic_ptr_edx_save", self.patch_shared_mem)
+        self.__add_symbol("ic_ptr_ebp_save", self.patch_shared_mem)
+        self.__add_symbol("ic_ptr_esp_save", self.patch_shared_mem)
+        self.__add_symbol("ic_ptr_esi_save", self.patch_shared_mem)
+        self.__add_symbol("ic_ptr_edi_save", self.patch_shared_mem)
+        self.__add_symbol("ic_ptr_ecx_save", self.patch_shared_mem)
+        self.__add_symbol("draw_polygon_wireframe_flag", self.patch_shared_mem)
+        self.__add_symbol("disable_poly_texture_flag", self.patch_shared_mem)
+        self.__add_symbol("disable_layer_background_flag", self.patch_shared_mem)
+        self.__add_symbol("disable_layer_props0_flag", self.patch_shared_mem)
+        self.__add_symbol("disable_layer_players_flag", self.patch_shared_mem)
+        self.__add_symbol("disable_layer_props1_flag", self.patch_shared_mem)
+        self.__add_symbol("disable_layer_poly_flag", self.patch_shared_mem)
+        self.__add_symbol("disable_layer_props2_flag", self.patch_shared_mem)
+        self.__add_symbol("disable_layer_interface_flag", self.patch_shared_mem)
+        self.__add_symbol("wireframe_mode", self.patch_shared_mem)
+
         self.assembler.add_to_symbol_table("background_fbo", self.framebuffer_addresses+4)
         self.assembler.add_to_symbol_table("props_fbo0", self.framebuffer_addresses+8)
         self.assembler.add_to_symbol_table("players_fbo", self.framebuffer_addresses+12)
@@ -135,3 +145,14 @@ class GraphicsPatcher:
         self.assembler.add_to_symbol_table("IC_branch_1", 0x00508988)
         self.assembler.add_to_symbol_table("IC_continue", 0x005088E4)
         self.assembler.add_to_symbol_table("DC_continue", 0x00508B21)
+
+    def __add_symbol(self, name: str, address: int):
+        if self.symbol_count == 1024 // 4:
+            raise BufferError("Maximum capacity reached for symbols.")
+        self.assembler.add_to_symbol_table(name, address + self.symbol_count * 4)
+        self.symbol_count += 1
+
+    def get_symbol_address(self, symbol_name: str) -> int:
+        if symbol_name not in self.assembler.symbol_table:
+            return -1
+        return self.assembler.symbol_table[symbol_name]

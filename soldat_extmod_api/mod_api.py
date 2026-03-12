@@ -19,6 +19,7 @@ from soldat_extmod_api.graphics_helper.gl_constants import ShaderType, ShaderLay
 from soldat_extmod_api.graphics_helper.shader import Shader
 from soldat_extmod_api.graphics_helper.shader_program import ShaderProgram
 from soldat_extmod_api.graphics_helper.map_graphics_struct import TMapGraphics
+from typing import Literal
 import logging
 
 logging.basicConfig(
@@ -188,6 +189,78 @@ class ModAPI(metaclass=Singleton):
             self.soldat_bridge.write(vbo_addresses, (vbo_count+1).to_bytes(4, "little", signed=False))
         return result
 
+    def disable_background_layer(self):
+        self.soldat_bridge.write(
+            self.graphics_patcher.get_symbol_address("disable_layer_background_flag"), 
+            b"\x01"
+        )
+
+    def enable_background_layer(self):
+        self.soldat_bridge.write(
+            self.graphics_patcher.get_symbol_address("disable_layer_background_flag"), 
+            b"\x00"
+        )
+
+    def disable_props0_layer(self):
+        self.soldat_bridge.write(
+            self.graphics_patcher.get_symbol_address("disable_layer_props0_flag"), 
+            b"\x01"
+        )
+
+    def enable_props0_layer(self):
+        self.soldat_bridge.write(
+            self.graphics_patcher.get_symbol_address("disable_layer_props0_flag"), 
+            b"\x00"
+        )
+
+    def disable_players_layer(self):
+        self.soldat_bridge.write(
+            self.graphics_patcher.get_symbol_address("disable_layer_players_flag"), 
+            b"\x01"
+        )
+
+    def enable_players_layer(self):
+        self.soldat_bridge.write(
+            self.graphics_patcher.get_symbol_address("disable_layer_players_flag"), 
+            b"\x00"
+        )
+
+    def disable_props1_layer(self):
+        self.soldat_bridge.write(
+            self.graphics_patcher.get_symbol_address("disable_layer_props1_flag"), 
+            b"\x01"
+        )
+
+    def enable_props1_layer(self):
+        self.soldat_bridge.write(
+            self.graphics_patcher.get_symbol_address("disable_layer_props1_flag"), 
+            b"\x00"
+        )
+
+    def disable_props2_layer(self):
+        self.soldat_bridge.write(
+            self.graphics_patcher.get_symbol_address("disable_layer_props2_flag"), 
+            b"\x01"
+        )
+
+    def enable_props2_layer(self):
+        self.soldat_bridge.write(
+            self.graphics_patcher.get_symbol_address("disable_layer_props2_flag"), 
+            b"\x00"
+        )
+
+    def disable_interface_layer(self):
+        self.soldat_bridge.write(
+            self.graphics_patcher.get_symbol_address("disable_layer_interface_flag"), 
+            b"\x01"
+        )
+
+    def enable_interface_layer(self):
+        self.soldat_bridge.write(
+            self.graphics_patcher.get_symbol_address("disable_layer_interface_flag"), 
+            b"\x00"
+        )
+
     # ======== GUI methods
     
     def get_gui_frame(self) -> Frame:
@@ -203,16 +276,46 @@ class ModAPI(metaclass=Singleton):
         return MapManager.collision_test(self, pos, is_flag)
 
     def enable_polygon_wireframe(self):
-        self.soldat_bridge.write(self.graphics_patcher.patch_shared_mem+32, b"\x01")
+        self.soldat_bridge.write(
+            self.graphics_patcher.get_symbol_address("draw_polygon_wireframe_flag"), 
+            b"\x01"
+        )
 
     def disable_polygon_wireframe(self):
-        self.soldat_bridge.write(self.graphics_patcher.patch_shared_mem+32, b"\x00")
+        self.soldat_bridge.write(
+            self.graphics_patcher.get_symbol_address("draw_polygon_wireframe_flag"), 
+            b"\x00"
+        )
 
     def enable_polygon_textures(self):
-        self.soldat_bridge.write(self.graphics_patcher.patch_shared_mem+36, b"\x00")
+        self.soldat_bridge.write(
+            self.graphics_patcher.get_symbol_address("disable_poly_texture_flag"), 
+            b"\x00"
+        )
 
     def disable_polygon_textures(self):
-        self.soldat_bridge.write(self.graphics_patcher.patch_shared_mem+36, b"\x01")
+        self.soldat_bridge.write(
+            self.graphics_patcher.get_symbol_address("disable_poly_texture_flag"), 
+            b"\x01"
+        )
+
+    def set_polygon_mode(self, mode: Literal["fill", "line"]):
+        self.soldat_bridge.write(
+            self.graphics_patcher.get_symbol_address("wireframe_mode"),
+            (mode == "fill").to_bytes()
+        )
+
+    def disable_polygon_layer(self):
+        self.soldat_bridge.write(
+            self.graphics_patcher.get_symbol_address("disable_layer_poly_flag"), 
+            b"\x01"
+        )
+
+    def enable_polygon_layer(self):
+        self.soldat_bridge.write(
+            self.graphics_patcher.get_symbol_address("disable_layer_poly_flag"), 
+            b"\x00"
+        )
 
     def get_current_map_vertexdata(self) -> bytes:
         vertexdata_addr = self.soldat_bridge.read(self.graphics_patcher.map_vertexdata_address, 4)

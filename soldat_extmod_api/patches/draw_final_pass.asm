@@ -37,30 +37,48 @@ iter_shaders:
 combine_framebuffers:
     mov eax, dword ptr ds:[final_pass_fbo]
     call SwitchRenderTargetClearkeeptransparent
+    cmp dword ptr ds:[disable_layer_background_flag], 0
+    jne combine_props0
     call GfxBegin
     mov eax, dword ptr ds:[background_fbo]
     call DrawFullscreenQuad
     call GfxEnd
+    combine_props0:
+    cmp dword ptr ds:[disable_layer_props0_flag], 0
+    jne combine_players
     call GfxBegin
     mov eax, dword ptr ds:[props_fbo0]
     call DrawFullscreenQuad
     call GfxEnd
+    combine_players:
+    cmp dword ptr ds:[disable_layer_players_flag], 0
+    jne combine_props1
     call GfxBegin
     mov eax, dword ptr ds:[players_fbo]
     call DrawFullscreenQuad
     call GfxEnd
+    combine_props1:
+    cmp dword ptr ds:[disable_layer_props1_flag], 0
+    jne combine_poly
     call GfxBegin
     mov eax, dword ptr ds:[props_fbo1]
     call DrawFullscreenQuad
     call GfxEnd
+    combine_poly:
+    cmp dword ptr ds:[disable_layer_poly_flag], 0
+    jne combine_props2
     call GfxBegin
     mov eax, dword ptr ds:[poly_fbo]
     call DrawFullscreenQuad
     call GfxEnd
+    combine_props2:
+    cmp dword ptr ds:[disable_layer_props2_flag], 0
+    jne combine_wireframe
     call GfxBegin
     mov eax, dword ptr ds:[props_fbo2]
     call DrawFullscreenQuad
     call GfxEnd
+    combine_wireframe:
     cmp dword ptr ds:[draw_polygon_wireframe_flag], 0
     je skip_wireframe
     call GfxBegin
@@ -69,10 +87,14 @@ combine_framebuffers:
     call GfxEnd
     skip_wireframe:
     call IterPostprocessShaders
+    combine_interface:
+    cmp dword ptr ds:[disable_layer_interface_flag], 0
+    jne draw_final_pass
     call GfxBegin
     mov eax, dword ptr ds:[interface_fbo]
     call DrawFullscreenQuad
     call GfxEnd
+    draw_final_pass:
     xor eax, eax
     call SwitchRenderTargetClearkeeptransparent
     call GfxBegin
