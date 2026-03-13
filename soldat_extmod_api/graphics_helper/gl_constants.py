@@ -9,6 +9,8 @@ class ShaderLayer(Enum):
     PROPS_2 = auto()
     INTERFACE = auto()
     POST_PROCESS = auto()
+    WIREFRAME = auto()
+    THINGS_POLYGONS = auto()
 
 
 class ShaderType(Enum):
