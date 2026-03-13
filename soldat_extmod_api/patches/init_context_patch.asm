@@ -16,6 +16,8 @@ mov dword ptr ds:[players_fbo], eax
 call CreateFrameBuffer
 mov dword ptr ds:[props_fbo1], eax
 call CreateFrameBuffer
+mov dword ptr ds:[things_polygons_fbo], eax
+call CreateFrameBuffer
 mov dword ptr ds:[poly_fbo], eax
 call CreateFrameBuffer
 mov dword ptr ds:[poly_wireframe_fbo], eax
@@ -25,7 +27,7 @@ call CreateFrameBuffer
 mov dword ptr ds:[interface_fbo], eax
 call CreateFrameBuffer
 mov dword ptr ds:[final_pass_fbo], eax
-mov dword ptr ds:[ptr_framebuffer_count], 9
+mov dword ptr ds:[ptr_framebuffer_count], 0xA
 execute_stolen:
     mov eax, dword ptr ds:[ic_ptr_eax_save]
     mov ebx, dword ptr ds:[ic_ptr_ebx_save]

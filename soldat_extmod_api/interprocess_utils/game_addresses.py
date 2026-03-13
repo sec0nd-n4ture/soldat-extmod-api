@@ -97,6 +97,7 @@ addresses = {
             "RF_RenderProps2": 0x005CCB95,
             "RF_RenderInterface": 0x005CCBF2,
             "RF_FBOCombination": 0x005CD01C,
+            "RF_RenderThingsPolygons": 0x005CCB03,
             "ptr_default_shader_handle": 0x005E9A7C,
             "GfxDrawSprite": 0x00509B0C,
             "GfxTextColor": 0x0050AEE4,

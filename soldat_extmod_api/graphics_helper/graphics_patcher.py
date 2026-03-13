@@ -106,6 +106,7 @@ class GraphicsPatcher:
         self.patcher.patch(os.path.join(self.patches_dir, "draw_hijack_interface.asm"), "RF_RenderInterface", 0)
         self.patcher.patch(os.path.join(self.patches_dir, "draw_final_pass.asm"), "RF_FBOCombination", 0)
         self.patcher.patch(os.path.join(self.patches_dir, "map_vbo_hook.asm"), "MapVBOHook", 0)
+        self.patcher.patch(os.path.join(self.patches_dir, "draw_hijack_things_polygons.asm"), "RF_RenderThingsPolygons", 0)
 
     # TODO: generalize SharedMemory for shaders
     def __generate_shader_patch_symbols(self):
@@ -131,6 +132,7 @@ class GraphicsPatcher:
         self.__add_symbol("disable_layer_poly_flag", self.patch_shared_mem)
         self.__add_symbol("disable_layer_props2_flag", self.patch_shared_mem)
         self.__add_symbol("disable_layer_interface_flag", self.patch_shared_mem)
+        self.__add_symbol("disable_layer_things_polygons_flag", self.patch_shared_mem)
         self.__add_symbol("wireframe_mode", self.patch_shared_mem)
 
         self.assembler.add_to_symbol_table("background_fbo", self.framebuffer_addresses+4)
@@ -142,6 +144,7 @@ class GraphicsPatcher:
         self.assembler.add_to_symbol_table("interface_fbo", self.framebuffer_addresses+28)
         self.assembler.add_to_symbol_table("final_pass_fbo", self.framebuffer_addresses+32)
         self.assembler.add_to_symbol_table("poly_wireframe_fbo", self.framebuffer_addresses+36)
+        self.assembler.add_to_symbol_table("things_polygons_fbo", self.framebuffer_addresses+40)
         self.assembler.add_to_symbol_table("IC_branch_1", 0x00508988)
         self.assembler.add_to_symbol_table("IC_continue", 0x005088E4)
         self.assembler.add_to_symbol_table("DC_continue", 0x00508B21)

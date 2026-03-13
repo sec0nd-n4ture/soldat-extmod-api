@@ -59,9 +59,16 @@ combine_framebuffers:
     call GfxEnd
     combine_props1:
     cmp dword ptr ds:[disable_layer_props1_flag], 0
-    jne combine_poly
+    jne combine_things_polygons
     call GfxBegin
     mov eax, dword ptr ds:[props_fbo1]
+    call DrawFullscreenQuad
+    call GfxEnd
+    combine_things_polygons:
+    cmp dword ptr ds:[disable_layer_things_polygons_flag], 0
+    jne combine_poly
+    call GfxBegin
+    mov eax, dword ptr ds:[things_polygons_fbo]
     call DrawFullscreenQuad
     call GfxEnd
     combine_poly:

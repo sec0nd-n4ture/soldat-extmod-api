@@ -261,6 +261,18 @@ class ModAPI(metaclass=Singleton):
             b"\x00"
         )
 
+    def disable_things_polygons_layer(self):
+        self.soldat_bridge.write(
+            self.graphics_patcher.get_symbol_address("disable_layer_things_polygons_flag"), 
+            b"\x01"
+        )
+
+    def enable_things_polygons_layer(self):
+        self.soldat_bridge.write(
+            self.graphics_patcher.get_symbol_address("disable_layer_things_polygons_flag"), 
+            b"\x00"
+        )
+
     # ======== GUI methods
     
     def get_gui_frame(self) -> Frame:
@@ -384,10 +396,10 @@ class ModAPI(metaclass=Singleton):
     # ======== Privates
 
     def __initialize_fbos(self):
-        for _ in range(9):
+        for _ in range(10):
             self.create_frame_buffer()
         self.frambuffers_initialized = True
-        logging.info("Shaders: created 9 frame buffers.")
+        logging.info("Shaders: created 10 frame buffers.")
         self.unsubscribe_event(self.__initialize_fbos, Event.DIRECTX_READY)
 
     def __bridge_collapse(self):
