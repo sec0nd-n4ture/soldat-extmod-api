@@ -3,6 +3,11 @@ cmp al, 0x1
 jne exit_norestore
 jmp check_moreflags
 exit_restore:
+    mov ebx, dword ptr ds:[pScale_interface]
+    cmp dword ptr ds:[ebx], 0
+    jne no_restore_transform
+    call ScaleToRenderRes
+    no_restore_transform:
     mov ebx, dword ptr ds:[ptr_ebx_save]
     mov edx, dword ptr ds:[ptr_edx_save]
     mov ebp, dword ptr ds:[ptr_ebp_save]
@@ -10,6 +15,7 @@ exit_restore:
     mov esi, dword ptr ds:[ptr_esi_save]
     mov edi, dword ptr ds:[ptr_edi_save]
 exit_norestore:
+    call GfxBegin
     push ebp
     mov ebp, esp
     mov ecx, ifacebyte
@@ -223,6 +229,12 @@ gfx_draw_loop:
     mov dword ptr ds:[ptr_esp_save], esp
     mov dword ptr ds:[ptr_esi_save], esi
     mov dword ptr ds:[ptr_edi_save], edi
+    mov ebx, dword ptr ds:[pScale_interface]
+    cmp dword ptr ds:[ebx], 0
+    jne no_transform
+    call ScaleToGameRes
+    no_transform:
+    call GfxBegin
     mov ebx, dword ptr ds:[ptr_sprite_head]
     cmp ebx, 0x0
     je text_draw_loop
@@ -338,7 +350,7 @@ check_text_active:
 text_iter_continue:
     dec ebx
     cmp ebx, 0x0
-    je exit_restore
+    je exit_gfx_draw_loop
     add edi, 0x2C
     jmp check_text_active
 check_text_type:
@@ -450,3 +462,50 @@ WorldToScreenY:
     fstp dword ptr ds:[eax]
     mov ecx, dword ptr ds:[eax]
     ret
+
+
+ScaleToGameRes:
+    add esp, 0xFFFFFFDC
+    push 0
+    mov eax, dword ptr ds:[game_width]
+    fild dword ptr ds:[eax]
+    add esp, 0xFFFFFFFC
+    fstp dword ptr ss:[esp]
+    fwait 
+    push 0
+    mov eax, dword ptr ds:[game_height]
+    fild dword ptr ds:[eax]
+    add esp, 0xFFFFFFFC
+    fstp dword ptr ss:[esp]
+    fwait 
+    lea eax,dword ptr ss:[esp+0x10]
+    call GfxMat3Ortho
+    mov eax, esp
+    call GfxTransform
+    add esp, 0x24
+    ret 
+
+ScaleToRenderRes:
+    add esp, 0xFFFFFFDC
+    push 0
+    mov eax, dword ptr ds:[render_width]
+    fild dword ptr ds:[eax]
+    add esp, 0xFFFFFFFC
+    fstp dword ptr ss:[esp]
+    fwait 
+    push 0
+    mov eax, dword ptr ds:[render_height]
+    fild dword ptr ds:[eax]
+    add esp, 0xFFFFFFFC
+    fstp dword ptr ss:[esp]
+    fwait 
+    lea eax,dword ptr ss:[esp+0x10]
+    call GfxMat3Ortho
+    mov eax, esp
+    call GfxTransform
+    add esp, 0x24
+    ret 
+
+exit_gfx_draw_loop:
+call GfxEnd
+jmp exit_restore

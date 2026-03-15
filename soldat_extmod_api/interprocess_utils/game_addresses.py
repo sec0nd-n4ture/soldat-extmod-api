@@ -109,6 +109,7 @@ addresses = {
             "GfxDraw": 0x00508E00,
             "GfxDrawOverload2": 0x00508E1C,
             "ifacebyte": 0x40,
+            "pScale_interface": 0x005E4060,
             "Stbi_load_from_memory": 0x1470, # offset
             "camera_world_pos_x": 0x008CBFE8,
             "camera_world_pos_y": 0x008CBFEC,
@@ -119,6 +120,10 @@ addresses = {
             "game_height_half": 0x005E4594,
             "screen_width": 0x005E3C98,
             "screen_height": 0x005E3C5C,
+            "render_width": 0x005E49EC,
+            "render_height": 0x005E49C0,
+            "game_width": 0x005E48A8,
+            "game_height": 0x005E4858,
             "dxready": 0x005E1714,
             "diready": 0x005E1718,
             "CreateSprite": 0x005458F4,
