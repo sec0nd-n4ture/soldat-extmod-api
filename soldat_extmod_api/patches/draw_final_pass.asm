@@ -38,9 +38,23 @@ combine_framebuffers:
     mov eax, dword ptr ds:[final_pass_fbo]
     call SwitchRenderTargetClearkeeptransparent
     cmp dword ptr ds:[disable_layer_background_flag], 0
-    jne combine_props0
+    jne combine_backpoly
     call GfxBegin
     mov eax, dword ptr ds:[background_fbo]
+    call DrawFullscreenQuad
+    call GfxEnd
+    combine_backpoly:
+    cmp dword ptr ds:[disable_layer_backpoly_flag], 0
+    jne combine_backpoly_wireframe
+    call GfxBegin
+    mov eax, dword ptr ds:[backpoly_fbo]
+    call DrawFullscreenQuad
+    call GfxEnd
+    combine_backpoly_wireframe:
+    cmp dword ptr ds:[draw_polygon_wireframe_flag], 0
+    je combine_props0
+    call GfxBegin
+    mov eax, dword ptr ds:[backpoly_wireframe_fbo]
     call DrawFullscreenQuad
     call GfxEnd
     combine_props0:

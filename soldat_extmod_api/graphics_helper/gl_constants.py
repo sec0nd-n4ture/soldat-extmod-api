@@ -11,6 +11,8 @@ class ShaderLayer(Enum):
     POST_PROCESS = auto()
     WIREFRAME = auto()
     THINGS_POLYGONS = auto()
+    BACKPOLY = auto()
+    BACKPOLY_WIREFRAME = auto()
 
 
 class ShaderType(Enum):

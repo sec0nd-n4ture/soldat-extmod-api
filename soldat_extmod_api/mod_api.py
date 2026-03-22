@@ -329,6 +329,18 @@ class ModAPI(metaclass=Singleton):
             b"\x00"
         )
 
+    def disable_backpoly_layer(self):
+        self.soldat_bridge.write(
+            self.graphics_patcher.get_symbol_address("disable_layer_backpoly_flag"), 
+            b"\x01"
+        )
+
+    def enable_backpoly_layer(self):
+        self.soldat_bridge.write(
+            self.graphics_patcher.get_symbol_address("disable_layer_backpoly_flag"), 
+            b"\x00"
+        )
+
     def get_current_map_vertexdata(self) -> bytes:
         vertexdata_addr = self.soldat_bridge.read(self.graphics_patcher.map_vertexdata_address, 4)
         vertexdata_addr = int.from_bytes(vertexdata_addr, "little")
@@ -396,10 +408,10 @@ class ModAPI(metaclass=Singleton):
     # ======== Privates
 
     def __initialize_fbos(self):
-        for _ in range(10):
+        for _ in range(12):
             self.create_frame_buffer()
         self.frambuffers_initialized = True
-        logging.info("Shaders: created 10 frame buffers.")
+        logging.info("Shaders: created 12 frame buffers.")
         self.unsubscribe_event(self.__initialize_fbos, Event.DIRECTX_READY)
 
     def __bridge_collapse(self):

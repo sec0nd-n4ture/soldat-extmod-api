@@ -10,6 +10,10 @@ mov dword ptr ds:[ic_ptr_edi_save], edi
 call CreateFrameBuffer
 mov dword ptr ds:[background_fbo], eax
 call CreateFrameBuffer
+mov dword ptr ds:[backpoly_fbo], eax
+call CreateFrameBuffer
+mov dword ptr ds:[backpoly_wireframe_fbo], eax
+call CreateFrameBuffer
 mov dword ptr ds:[props_fbo0], eax
 call CreateFrameBuffer
 mov dword ptr ds:[players_fbo], eax
@@ -27,7 +31,7 @@ call CreateFrameBuffer
 mov dword ptr ds:[interface_fbo], eax
 call CreateFrameBuffer
 mov dword ptr ds:[final_pass_fbo], eax
-mov dword ptr ds:[ptr_framebuffer_count], 0xA
+mov dword ptr ds:[ptr_framebuffer_count], 0xC
 execute_stolen:
     mov eax, dword ptr ds:[ic_ptr_eax_save]
     mov ebx, dword ptr ds:[ic_ptr_ebx_save]

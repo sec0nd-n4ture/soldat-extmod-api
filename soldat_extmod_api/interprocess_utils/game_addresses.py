@@ -90,6 +90,7 @@ addresses = {
             "GfxCreateRenderTarget": 0x005091BC,
             "GfxCreateBuffer": 0x00509358,
             "RF_Background": 0x005CC670,
+            "RF_Backpoly": 0x005CCA13,
             "RF_RenderProps0": 0x005CCA3B,
             "RF_RenderPlayers": 0x005CCA58,
             "RF_RenderProps1": 0x005CCAF4,
