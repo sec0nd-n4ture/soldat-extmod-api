@@ -1,10 +1,13 @@
 import win32api
 import win32.lib.win32con as win32con
 import ctypes
-from ctypes.wintypes import BOOL, HWND,LPDWORD,\
-                            DWORD, HANDLE,LPVOID,\
-                            LPCVOID, SHORT, INT, LPSTR,\
-                            HHOOK, HINSTANCE, WPARAM, LPARAM, MSG
+from ctypes.wintypes import (
+    BOOL, HWND,LPDWORD,
+    DWORD, HANDLE,LPVOID,
+    LPCVOID, SHORT, INT, LPSTR,
+    HHOOK, HINSTANCE, WPARAM, LPARAM,
+    MSG, HKL, UINT, LPWSTR, PBYTE
+)
 
 HOOKPROC = ctypes.CFUNCTYPE(ctypes.c_void_p, ctypes.c_int, WPARAM, LPARAM)
 # Delegate functions
@@ -15,6 +18,8 @@ GetMessageW = ctypes.windll.user32.GetMessageW
 PeekMessageW = ctypes.windll.user32.PeekMessageW
 TranslateMessage = ctypes.windll.user32.TranslateMessage
 DispatchMessageW = ctypes.windll.user32.DispatchMessageW
+GetKeyboardLayout = ctypes.windll.user32.GetKeyboardLayout
+ToUnicode = ctypes.windll.user32.ToUnicode
 GetWindowThreadProcessId = ctypes.windll.user32.GetWindowThreadProcessId
 VirtualAllocEx = ctypes.windll.kernel32.VirtualAllocEx
 VirtualFreeEx = ctypes.windll.kernel32.VirtualFreeEx
@@ -79,6 +84,12 @@ UnhookWindowsHookEx.argtypes = [HHOOK]
 UnhookWindowsHookEx.restype = BOOL
 
 GetCurrentThreadId.restype = DWORD
+
+GetKeyboardLayout.argtypes = [DWORD]
+GetKeyboardLayout.restype = HKL
+
+ToUnicode.argtypes = [UINT, UINT, PBYTE, LPWSTR, ctypes.c_int, UINT]
+ToUnicode.restype = ctypes.c_int
 
 class KBDLLHOOKSTRUCT(ctypes.Structure):
     _fields_ = [("vk_code", ctypes.c_int),
