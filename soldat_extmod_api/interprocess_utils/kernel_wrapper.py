@@ -88,7 +88,6 @@ GetCurrentThreadId.restype = DWORD
 GetKeyboardLayout.argtypes = [DWORD]
 GetKeyboardLayout.restype = HKL
 
-ToUnicode.argtypes = [UINT, UINT, PBYTE, LPWSTR, ctypes.c_int, UINT]
 ToUnicode.restype = ctypes.c_int
 
 class KBDLLHOOKSTRUCT(ctypes.Structure):

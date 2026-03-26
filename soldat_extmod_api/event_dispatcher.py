@@ -2,7 +2,7 @@ from soldat_extmod_api.interprocess_utils.kernel_wrapper import (
     GetKeyState, GetKeyboardLayout, ToUnicode
 )
 from enum import Enum, auto
-from ctypes import c_short, create_unicode_buffer, c_byte
+from ctypes import c_short, create_unicode_buffer, c_ubyte
 from collections.abc import Callable
 from struct import unpack
 
@@ -277,10 +277,6 @@ class EventDispatcher:
         self.checkpoints = []
         self.respawned = True
         self.key_prev_state = {}
-        # self.pynput_listener = keyboard.Listener(on_press=self.pynput_on_keyboard_down, on_release=self.pynput_on_keyboard_up, win32_event_filter=self.win32_event_filter, suppress=False)
-        # self.pynput_listener.start()
-        # self.prevent_key_propagation = False
-
 
     def subscribe(self, callback: Callable, type: int):
         """
@@ -519,11 +515,9 @@ class EventDispatcher:
             modifiers.add('ralt')
 
         char = ''
-        hkl = GetKeyboardLayout(0)
         buf = create_unicode_buffer(5)
-        state = (c_byte * 256)()
+        state = (c_ubyte * 256)()
         ret = ToUnicode(vk_code, 0, state, buf, 5, 0)
         if ret > 0:
             char = buf.value
-
         return KeyInfo(vk_code, char, modifiers)
