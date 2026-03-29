@@ -405,6 +405,19 @@ class ModAPI(metaclass=Singleton):
     def set_camera_position(self, position: Vector2D):
         self.camera_manager.set_cam_pos(position)
 
+    def set_camera_sprite_target(self, target_id: int) -> bool:
+        return self.camera_manager.set_camera_target(target_id)
+
+    def get_camera_sprite_target(self) -> int:
+        return self.camera_manager.get_camera_target()
+
+    # ======== Chat related methods
+
+    def is_chat_open(self) -> bool:
+        chat_text_addr = self.soldat_bridge.read(self.addresses["pChatText"], 4)
+        chat_text_addr = self.soldat_bridge.read(int.from_bytes(chat_text_addr, "little"), 4)
+        return bool.from_bytes(chat_text_addr)
+
     # ======== Privates
 
     def __initialize_fbos(self):

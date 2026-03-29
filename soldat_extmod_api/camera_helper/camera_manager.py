@@ -7,6 +7,9 @@ class CameraManager:
         self.cursor_x_setter_address = self.api.addresses["cursor_x_setter"]
         self.cursor_y_setter_address = self.api.addresses["cursor_y_setter"]
 
+        self.get_cam_target_address = self.api.addresses["TMainForm.GetCameraTarget"]
+        self.__get_cam_target_old_bytes = self.api.soldat_bridge.read(self.get_cam_target_address, 3)
+
         self.__old_bytes = self.api.soldat_bridge.read(self.cursor_x_setter_address, 2)
         self.__old_bytes += self.api.soldat_bridge.read(self.cursor_y_setter_address, 2)
     
@@ -29,10 +32,13 @@ class CameraManager:
     def take_cursor_controls(self):
         self.api.soldat_bridge.write(self.cursor_x_setter_address, b"\x90\x90")
         self.api.soldat_bridge.write(self.cursor_y_setter_address, b"\x90\x90")
+        self.api.soldat_bridge.write(self.get_cam_target_address, b"\x31\xC0\xC3") # xor eax, eax;ret
+        self.set_camera_target(0)
 
     def restore_cursor_controls(self):
         self.api.soldat_bridge.write(self.cursor_x_setter_address, self.__old_bytes[0:2])
         self.api.soldat_bridge.write(self.cursor_y_setter_address, self.__old_bytes[2:4])
+        self.api.soldat_bridge.write(self.get_cam_target_address, self.__get_cam_target_old_bytes)
 
     def take_camera_controls(self):
         self.api.soldat_bridge.write(self.misc1, b"\xA1"+self.temp_addr.to_bytes(4, "little"))
@@ -58,4 +64,27 @@ class CameraManager:
 
     def set_cam_pos(self, position: Vector2D):
         self.api.soldat_bridge.write(self.cam_world_pos_vec2, position.to_bytes())
-    
+
+    def get_camera_target(self) -> int:
+        return int.from_bytes(
+            self.api.soldat_bridge.read(
+                int.from_bytes(
+                    self.api.soldat_bridge.read(
+                        self.api.addresses["pCamera_follow_sprite"], 4
+                    ), "little"
+                ), 1
+            )
+        )
+
+    def set_camera_target(self, target: int) -> bool:
+        if target > 32 or target < 0:
+            return False
+        self.api.soldat_bridge.write(
+            int.from_bytes(
+                self.api.soldat_bridge.read(
+                    self.api.addresses["pCamera_follow_sprite"], 4
+                ), "little"
+            ),
+            target.to_bytes(1, "little")
+        )
+        return True
