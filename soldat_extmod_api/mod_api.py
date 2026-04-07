@@ -117,8 +117,26 @@ class ModAPI(metaclass=Singleton):
         scale_interface_addr = int.from_bytes(self.soldat_bridge.read(self.addresses["pScale_interface"], 4), "little")
         scaled_state = bool.from_bytes(self.soldat_bridge.read(scale_interface_addr, 4), "little")
         if not scaled_state:
-            shadow_scale = Vector2D(shadow_scale.x * 2, shadow_scale.y * 2)
-            font_scale *= 2
+            read_ptr = lambda key: int.from_bytes(
+                self.soldat_bridge.read(
+                    int.from_bytes(
+                        self.soldat_bridge.read(self.addresses[key], 4),
+                        "little"
+                    ),
+                    4
+                ),
+                "little"
+            )
+            game_width = read_ptr("game_width")
+            game_height = read_ptr("game_height")
+            screen_width = read_ptr("screen_width")
+            screen_height = read_ptr("screen_height")
+            font_scale_factor =  ((screen_width / game_width) + (screen_height / game_height)) / 2
+            shadow_scale = Vector2D(
+                shadow_scale.x * (screen_width / game_width),
+                shadow_scale.y * (screen_height / game_height)
+            )
+            font_scale *= font_scale_factor
         return InterfaceText(self, text, position, color, shadow_color, scale, shadow_scale, font_style, font_scale)
 
     def enable_drawing(self):
