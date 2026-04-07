@@ -3,8 +3,7 @@ from soldat_extmod_api.graphics_helper.vector_utils import Vector2D
 from soldat_extmod_api.graphics_helper.sm_image_linkedlist import ImageNode
 from soldat_extmod_api.graphics_helper.sm_text import InterfaceText
 from soldat_extmod_api.graphics_helper.sm_text import TEXT_MAX_LENGTH
-from soldat_extmod_api.event_dispatcher import Event
-from pynput.keyboard import Key
+from soldat_extmod_api.event_dispatcher import Event, KeyInfo, VK_KEYCODE
 import math
 
 
@@ -275,31 +274,30 @@ class TextField(Interactive, TextLabel):
         self.api.unsubscribe_event(self.on_internal_keypress, Event.INTERNAL_KEYPRESS)
         return super().unsubscribe()
 
-    def on_anykbkey_down(self, key):
+    def on_anykbkey_down(self, key: KeyInfo):
         if self.is_writing:
             char = ""
-            if isinstance(key, Key):
-                if key == Key.backspace:
-                    if self.cursor_position > 0:
-                        self.input_text = self.input_text[:self.cursor_position - 1] + self.input_text[self.cursor_position:]
-                        self.cursor_position -= 1
-                        self.update_text(self.input_text)
-                        return
-                elif key == Key.space:
-                    char = " "
-                elif key == Key.shift or key == Key.shift_l or key == Key.shift_r:
-                    self.shift_down = True
-                elif key == Key.alt or key == Key.alt_gr or key == Key.alt_l or key == Key.alt_r:
-                    self.alt_down = True
-            elif self.capslock_toggled:
-                char = key.char.upper()
-            elif not self.shift_down and not self.alt_down:
-                char = key.char
-            
-            if len(self.input_text) < self.max_text and char != "":
-                self.input_text = self.input_text[:self.cursor_position] + char + self.input_text[self.cursor_position:]
-                self.cursor_position += 1
-                self.update_text(self.input_text)
+            if key.vk_code == VK_KEYCODE.VK_BACK.value:
+                if self.cursor_position > 0:
+                    self.input_text = self.input_text[:self.cursor_position - 1] + self.input_text[self.cursor_position:]
+                    self.cursor_position -= 1
+                    self.update_text(self.input_text)
+                    return
+            elif key.vk_code == VK_KEYCODE.VK_SPACE.value:
+                char = " "
+            elif key.vk_code == VK_KEYCODE.VK_SHIFT.value:
+                self.shift_down = True
+            elif key.vk_code == VK_KEYCODE.VK_MENU.value:
+                self.alt_down = True
+        elif self.capslock_toggled:
+            char = key.char.upper()
+        elif not self.shift_down and not self.alt_down:
+            char = key.char
+        
+        if len(self.input_text) < self.max_text and char != "":
+            self.input_text = self.input_text[:self.cursor_position] + char + self.input_text[self.cursor_position:]
+            self.cursor_position += 1
+            self.update_text(self.input_text)
 
     def on_internal_keypress(self, key):
         if self.is_writing:
@@ -309,14 +307,13 @@ class TextField(Interactive, TextLabel):
                     self.cursor_position += 1
                 self.update_text(self.input_text)
 
-    def on_anykbkey_up(self, key):
-        if isinstance(key, Key):
-            if key == Key.caps_lock:
-                self.capslock_toggled ^= True
-            elif key == Key.shift or key == Key.shift_l or key == Key.shift_r:
-                self.shift_down = False
-            elif key == Key.alt or key == Key.alt_gr:
-                self.alt_down = False
+    def on_anykbkey_up(self, key: KeyInfo):
+        if key.vk_code == VK_KEYCODE.VK_CAPITAL.value:
+            self.capslock_toggled ^= True
+        elif key.vk_code == VK_KEYCODE.VK_SHIFT.value:
+            self.shift_down = False
+        elif key.vk_code == VK_KEYCODE.VK_MENU.value:
+            self.alt_down = False
 
     def update_text(self, text, show_cursor: bool = True):
         if show_cursor:
