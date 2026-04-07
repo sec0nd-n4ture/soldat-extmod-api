@@ -114,6 +114,11 @@ class ModAPI(metaclass=Singleton):
 
         Returns an InterfaceText object.
         '''
+        scale_interface_addr = int.from_bytes(self.soldat_bridge.read(self.addresses["pScale_interface"], 4), "little")
+        scaled_state = bool.from_bytes(self.soldat_bridge.read(scale_interface_addr, 4), "little")
+        if not scaled_state:
+            shadow_scale = Vector2D(shadow_scale.x * 2, shadow_scale.y * 2)
+            font_scale *= 2
         return InterfaceText(self, text, position, color, shadow_color, scale, shadow_scale, font_style, font_scale)
 
     def enable_drawing(self):

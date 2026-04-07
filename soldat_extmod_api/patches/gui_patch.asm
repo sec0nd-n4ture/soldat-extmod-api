@@ -341,6 +341,11 @@ load_world_pos_y_continue:
     jmp sprite_iter_continue
 
 text_draw_loop:
+    mov ebx, dword ptr ds:[pScale_interface]
+    cmp dword ptr ds:[ebx], 0
+    jne no_text_scale
+    call ScaleTextToGameRes
+    no_text_scale:
     mov ebx, dword ptr ds:[ptr_text_count]
     inc ebx
     mov edi, ptr_text_array
@@ -505,6 +510,25 @@ ScaleToRenderRes:
     call GfxTransform
     add esp, 0x24
     ret 
+
+ScaleTextToGameRes:
+    mov eax, dword ptr ds:[game_width]
+    fild dword ptr ds:[eax]
+    mov eax, dword ptr ds:[render_width]
+    fild dword ptr ds:[eax]
+    fdivp st(1), st(0)
+    fstp dword ptr ds:[0x00CF2898]
+    fwait 
+    mov eax,dword ptr ds:[game_height]
+    fild dword ptr ds:[eax]
+    mov eax,dword ptr ds:[render_height]
+    fild dword ptr ds:[eax]
+    fdivp st(1), st(0)
+    fstp dword ptr ds:[0x00CF289C]
+    fwait 
+    mov eax, 0x00CF2898
+    call GfxTextPixelRatio
+    ret
 
 exit_gfx_draw_loop:
 call GfxEnd

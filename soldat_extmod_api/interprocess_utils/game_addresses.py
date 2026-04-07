@@ -106,6 +106,7 @@ addresses = {
             "SetFontStyle": 0x005CD6B8,
             "GfxTextScale": 0x0050AED4,
             "GfxDrawText": 0x0050B1D8,
+            "GfxTextPixelRatio": 0x0050AEB0,
             "GfxBindTexture": 0x0050916C,
             "GfxDraw": 0x00508E00,
             "GfxDrawOverload2": 0x00508E1C,
