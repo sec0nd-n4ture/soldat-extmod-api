@@ -15,7 +15,7 @@ class Player:
         self.second_keystates_addr = addresses[_exec_hash]["player_base"] + (0x18ba * self.id) * 8 - 0x612
         self.is_dead_addr =          addresses[_exec_hash]["player_base"] + ((self.id - 1) * 0xC5D0) + 1
         self.player_team_addr =      addresses[_exec_hash]["player_base"] + (0x18ba * self.id) * 8 - 0xC5D0 + 0xC18C
-        self.transparency_addr =     addresses[_exec_hash]["player_base"] + (self.id * 0xC5D0) + 0x21
+        self.transparency_addr =     addresses[_exec_hash]["player_base"] + ((self.id - 1) * 0xC5D0) + 0x21
         self.active_addr =           addresses[_exec_hash]["player_base"] + ((self.id - 1) * 0xC5D0)
 
 
