@@ -13,6 +13,7 @@ class ShaderLayer(Enum):
     THINGS_POLYGONS = auto()
     BACKPOLY = auto()
     BACKPOLY_WIREFRAME = auto()
+    MOD_GRAPHICS = auto()
 
 
 class ShaderType(Enum):
