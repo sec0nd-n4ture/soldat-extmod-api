@@ -3,7 +3,7 @@ from struct import pack
 import json
 
 SERIAL_FILE_NAME = "sharedmemory.json"
-SHARED_MEMORY_DEFAULT_SIZE = 0x88
+SHARED_MEMORY_DEFAULT_SIZE = 0x8C
 
 '''
 SharedMemory structure:
@@ -40,6 +40,7 @@ SharedMemory structure:
     0x78 DWORD vbo size
     0x7C DWORD bool is vbo static
     0x80 DWORD pointer to vbo data
+    0x84 DWORD ptr private mod stack
 '''
 
 class SharedMemory:
@@ -106,6 +107,7 @@ class SharedMemory:
         self.sm_symbol_table["ptr_esp_save"] = self.get_savestate("ESP")
         self.sm_symbol_table["ptr_esi_save"] = self.get_savestate("ESI")
         self.sm_symbol_table["ptr_edi_save"] = self.get_savestate("EDI")
+        self.sm_symbol_table["private_stack"] = self.get_addr_private_stack
 
     def __str__(self) -> str:
         full_read = self.soldat_bridge.read(self.address, self.size).hex()
@@ -117,6 +119,10 @@ class SharedMemory:
 
     def get_savestate(self, register: str):
         return self.register_save_states[register]
+
+    @property
+    def get_addr_private_stack(self):
+        return self.address + 0x84
 
     @property
     def get_addr_flagredir(self):

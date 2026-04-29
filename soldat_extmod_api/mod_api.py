@@ -444,10 +444,10 @@ class ModAPI(metaclass=Singleton):
     # ======== Privates
 
     def __initialize_fbos(self):
-        for _ in range(12):
+        for _ in range(13):
             self.create_frame_buffer()
         self.frambuffers_initialized = True
-        logging.info("Shaders: created 12 frame buffers.")
+        logging.info("Shaders: created 13 frame buffers.")
         self.unsubscribe_event(self.__initialize_fbos, Event.DIRECTX_READY)
 
     def __bridge_collapse(self):

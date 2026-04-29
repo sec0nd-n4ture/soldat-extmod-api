@@ -1,13 +1,22 @@
+mov dword ptr ds:[ic_ptr_eax_save], eax
 mov al, byte ptr ds:[mem_shrd_redir_flag]
 cmp al, 0x1
 jne exit_norestore
+
+mov dword ptr ds:[ptr_ebx_save], ebx
+mov dword ptr ds:[ptr_edx_save], edx
+mov dword ptr ds:[ptr_ebp_save], ebp
+mov dword ptr ds:[ptr_esp_save], esp
+mov dword ptr ds:[ptr_esi_save], esi
+mov dword ptr ds:[ptr_edi_save], edi
+
+mov esp, dword ptr ss:[private_stack]
+add esp, 0x8000
+sub esp, 0x10
+and esp, 0xFFFFFFF0
+mov ebp, esp
 jmp check_moreflags
 exit_restore:
-    mov ebx, dword ptr ds:[pScale_interface]
-    cmp dword ptr ds:[ebx], 0
-    jne no_restore_transform
-    call ScaleToRenderRes
-    no_restore_transform:
     mov ebx, dword ptr ds:[ptr_ebx_save]
     mov edx, dword ptr ds:[ptr_edx_save]
     mov ebp, dword ptr ds:[ptr_ebp_save]
@@ -15,19 +24,10 @@ exit_restore:
     mov esi, dword ptr ds:[ptr_esi_save]
     mov edi, dword ptr ds:[ptr_edi_save]
 exit_norestore:
-    call GfxBegin
-    push ebp
-    mov ebp, esp
-    mov ecx, ifacebyte
-    xor eax, eax
+    mov eax, dword ptr ds:[ic_ptr_eax_save]
+    call RestoreState
     jmp RIhookContinue
 create_texture:
-    mov dword ptr ds:[ptr_ebx_save], ebx
-    mov dword ptr ds:[ptr_edx_save], edx
-    mov dword ptr ds:[ptr_ebp_save], ebp
-    mov dword ptr ds:[ptr_esp_save], esp
-    mov dword ptr ds:[ptr_esi_save], esi
-    mov dword ptr ds:[ptr_edi_save], edi
     push dword ptr ds:[ptr_image]
     mov ecx, dword ptr ds:[ptr_imagecompr]
     mov edx, dword ptr ds:[ptr_imageheight]
@@ -37,12 +37,6 @@ create_texture:
     mov byte ptr ds:[flag_texture_func], 0x0
     jmp exit_restore
 create_shader:
-    mov dword ptr ds:[ptr_ebx_save], ebx
-    mov dword ptr ds:[ptr_edx_save], edx
-    mov dword ptr ds:[ptr_ebp_save], ebp
-    mov dword ptr ds:[ptr_esp_save], esp
-    mov dword ptr ds:[ptr_esi_save], esi
-    mov dword ptr ds:[ptr_edi_save], edi
     mov eax, dword ptr ds:[ptr_shadertype]
     mov edx, dword ptr ds:[ptr_shadersource]
     call CreateShader
@@ -50,12 +44,6 @@ create_shader:
     mov byte ptr ds:[flag_shadercreate_func], 0x0
     jmp exit_restore
 create_program:
-    mov dword ptr ds:[ptr_ebx_save], ebx
-    mov dword ptr ds:[ptr_edx_save], edx
-    mov dword ptr ds:[ptr_ebp_save], ebp
-    mov dword ptr ds:[ptr_esp_save], esp
-    mov dword ptr ds:[ptr_esi_save], esi
-    mov dword ptr ds:[ptr_edi_save], edi
     mov eax, dword ptr ds:[pglCreateProgram]
     mov eax, dword ptr ds:[eax]
     call eax
@@ -63,12 +51,6 @@ create_program:
     mov byte ptr ds:[flag_progcreate_func], 0x0
     jmp exit_restore
 attach_shader:
-    mov dword ptr ds:[ptr_ebx_save], ebx
-    mov dword ptr ds:[ptr_edx_save], edx
-    mov dword ptr ds:[ptr_ebp_save], ebp
-    mov dword ptr ds:[ptr_esp_save], esp
-    mov dword ptr ds:[ptr_esi_save], esi
-    mov dword ptr ds:[ptr_edi_save], edi
     mov ebx, dword ptr ds:[ptr_shaderhandle]
     push ebx
     mov ebx, dword ptr ds:[ptr_proghandle]
@@ -79,12 +61,6 @@ attach_shader:
     mov byte ptr ds:[flag_attachshader_func], 0x0
     jmp exit_restore
 link_program:
-    mov dword ptr ds:[ptr_ebx_save], ebx
-    mov dword ptr ds:[ptr_edx_save], edx
-    mov dword ptr ds:[ptr_ebp_save], ebp
-    mov dword ptr ds:[ptr_esp_save], esp
-    mov dword ptr ds:[ptr_esi_save], esi
-    mov dword ptr ds:[ptr_edi_save], edi
     mov ebx, dword ptr ds:[ptr_proghandle]
     push ebx
     mov eax, dword ptr ds:[pglLinkProgram]
@@ -93,12 +69,6 @@ link_program:
     mov byte ptr ds:[flag_linkprog_func], 0x0
     jmp exit_restore
 create_frame_buffer:
-    mov dword ptr ds:[ptr_ebx_save], ebx
-    mov dword ptr ds:[ptr_edx_save], edx
-    mov dword ptr ds:[ptr_ebp_save], ebp
-    mov dword ptr ds:[ptr_esp_save], esp
-    mov dword ptr ds:[ptr_esi_save], esi
-    mov dword ptr ds:[ptr_edi_save], edi
     mov eax, dword ptr ds:[screen_width]
     mov eax, dword ptr ds:[eax]
     mov edx, dword ptr ds:[screen_height]
@@ -109,12 +79,6 @@ create_frame_buffer:
     mov byte ptr ds:[flag_fbocreate_func], 0x0
     jmp exit_restore
 create_vertex_buffer:
-    mov dword ptr ds:[ptr_ebx_save], ebx
-    mov dword ptr ds:[ptr_edx_save], edx
-    mov dword ptr ds:[ptr_ebp_save], ebp
-    mov dword ptr ds:[ptr_esp_save], esp
-    mov dword ptr ds:[ptr_esi_save], esi
-    mov dword ptr ds:[ptr_edi_save], edi
     mov eax, dword ptr ds:[ptr_vbosize]
     mov dl, byte ptr ds:[ptr_vbostatic]
     mov ecx, dword ptr ds:[ptr_vbodata]
@@ -123,12 +87,6 @@ create_vertex_buffer:
     mov byte ptr ds:[flag_vbocreate_func], 0x0
     jmp exit_restore
 get_uniform_location:
-    mov dword ptr ds:[ptr_ebx_save], ebx
-    mov dword ptr ds:[ptr_edx_save], edx
-    mov dword ptr ds:[ptr_ebp_save], ebp
-    mov dword ptr ds:[ptr_esp_save], esp
-    mov dword ptr ds:[ptr_esi_save], esi
-    mov dword ptr ds:[ptr_edi_save], edi
     mov ebx, dword ptr ds:[ptr_proghandle]
     push ebx
     mov eax, dword ptr ds:[pglUseProgram]
@@ -149,12 +107,6 @@ get_uniform_location:
     mov byte ptr ds:[flag_getuniformloc_func], 0x0
     jmp exit_restore
 set_uniformf:
-    mov dword ptr ds:[ptr_ebx_save], ebx
-    mov dword ptr ds:[ptr_edx_save], edx
-    mov dword ptr ds:[ptr_ebp_save], ebp
-    mov dword ptr ds:[ptr_esp_save], esp
-    mov dword ptr ds:[ptr_esi_save], esi
-    mov dword ptr ds:[ptr_edi_save], edi
     push dword ptr ds:[ptr_proghandle]
     mov eax, dword ptr ds:[pglUseProgram]
     mov eax, dword ptr ds:[eax]
@@ -217,24 +169,14 @@ check_moreflags:
     je set_uniformf
     mov al, byte ptr ds:[flag_draw_loop]
     cmp al, 0x1
-    jne exit_norestore
+    jne exit_restore
 
     
 
     
 gfx_draw_loop:
-    mov dword ptr ds:[ptr_ebx_save], ebx
-    mov dword ptr ds:[ptr_edx_save], edx
-    mov dword ptr ds:[ptr_ebp_save], ebp
-    mov dword ptr ds:[ptr_esp_save], esp
-    mov dword ptr ds:[ptr_esi_save], esi
-    mov dword ptr ds:[ptr_edi_save], edi
-    mov ebx, dword ptr ds:[pScale_interface]
-    cmp dword ptr ds:[ebx], 0
-    jne no_transform
-    call ScaleToGameRes
-    no_transform:
-    call GfxBegin
+    xor esi, esi
+    push esi
     mov ebx, dword ptr ds:[ptr_sprite_head]
     cmp ebx, 0x0
     je text_draw_loop
@@ -247,6 +189,32 @@ sprite_iter_continue:
     je text_draw_loop
     jmp check_sprite_active
 check_sprite_type:
+    pop esi
+    cmp esi, 0
+    jnz inc_draws
+    push ebx
+    mov ebx, dword ptr ds:[pScale_interface]
+    cmp dword ptr ds:[ebx], 0
+    jne no_transform
+    call ScaleToGameRes
+    no_transform:
+    mov eax, mod_graphics_fbo
+    mov eax, dword ptr ds:[eax]
+    cmp eax, 0
+    je default_fbo
+    call GfxTarget
+    push 0
+    xor ecx, ecx
+    xor edx, edx
+    xor eax, eax
+    call RGBAOverload2
+    call GfxClear
+    default_fbo:
+        call GfxBegin
+    pop ebx
+    inc_draws:
+        inc esi
+        push esi
     cmp byte ptr ds:[ebx+0x25], 0x1
     je sprite_draw_world
 sprite_draw_screen:
@@ -341,11 +309,6 @@ load_world_pos_y_continue:
     jmp sprite_iter_continue
 
 text_draw_loop:
-    mov ebx, dword ptr ds:[pScale_interface]
-    cmp dword ptr ds:[ebx], 0
-    jne no_text_scale
-    call ScaleTextToGameRes
-    no_text_scale:
     mov ebx, dword ptr ds:[ptr_text_count]
     inc ebx
     mov edi, ptr_text_array
@@ -359,6 +322,22 @@ text_iter_continue:
     add edi, 0x2C
     jmp check_text_active
 check_text_type:
+    pop esi
+    cmp esi, 0
+    jnz check_text_scale
+    call GfxBegin
+    check_text_scale:
+    cmp esi, 0xFFFFFFFF
+    je no_text_scale
+    push ebx
+    mov ebx, dword ptr ds:[pScale_interface]
+    cmp dword ptr ds:[ebx], 0
+    pop ebx
+    mov esi, 0xFFFFFFFF
+    jne no_text_scale
+    call ScaleTextToGameRes
+    no_text_scale:
+    push esi
     mov eax, dword ptr ds:[edi+0x4]
     call GfxTextColor
     push dword ptr ds:[edi+0x1C]
@@ -531,5 +510,9 @@ ScaleTextToGameRes:
     ret
 
 exit_gfx_draw_loop:
+pop esi
+cmp esi, 0
+jz no_draws
 call GfxEnd
+no_draws:
 jmp exit_restore

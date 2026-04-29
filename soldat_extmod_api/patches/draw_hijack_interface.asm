@@ -27,4 +27,5 @@ execute_stolen:
     mov esp, dword ptr ds:[ic_ptr_esp_save]
     mov esi, dword ptr ds:[ic_ptr_esi_save]
     mov edi, dword ptr ds:[ic_ptr_edi_save]
-    jmp 0x005CCBF7
+    call GfxSetMipmapBias
+    jmp RF_RenderInterfaceContinue

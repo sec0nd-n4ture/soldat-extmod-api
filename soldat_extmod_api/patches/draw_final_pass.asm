@@ -107,6 +107,10 @@ combine_framebuffers:
     call DrawFullscreenQuad
     call GfxEnd
     skip_wireframe:
+    call GfxBegin
+    mov eax, dword ptr ds:[mod_graphics_fbo]
+    call DrawFullscreenQuad
+    call GfxEnd
     call IterPostprocessShaders
     combine_interface:
     cmp dword ptr ds:[disable_layer_interface_flag], 0

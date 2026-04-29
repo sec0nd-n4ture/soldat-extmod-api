@@ -30,8 +30,10 @@ mov dword ptr ds:[props_fbo2], eax
 call CreateFrameBuffer
 mov dword ptr ds:[interface_fbo], eax
 call CreateFrameBuffer
+mov dword ptr ds:[mod_graphics_fbo], eax
+call CreateFrameBuffer
 mov dword ptr ds:[final_pass_fbo], eax
-mov dword ptr ds:[ptr_framebuffer_count], 0xC
+mov dword ptr ds:[ptr_framebuffer_count], 0xD
 execute_stolen:
     mov eax, dword ptr ds:[ic_ptr_eax_save]
     mov ebx, dword ptr ds:[ic_ptr_ebx_save]

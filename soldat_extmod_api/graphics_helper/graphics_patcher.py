@@ -27,6 +27,8 @@ class GraphicsPatcher:
         self.wireframe_vbo_address = self.soldat_bridge.allocate_memory(4, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE)
         self.shader_addresses = self.soldat_bridge.allocate_memory(32768, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE)
         self.keypress_buffer_address = self.soldat_bridge.allocate_memory(12, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE)
+        self.private_stack = self.soldat_bridge.allocate_memory(32768,  MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE)
+        self.soldat_bridge.write(self.shared_memory.get_addr_private_stack, self.private_stack.to_bytes(4, "little"))
         self.keypress_buffer_inc_address = self.keypress_buffer_address + 0x4
         self.soldat_bridge.write(self.shared_memory.get_addr_float_swizzle, self.float_swizzle_mem.to_bytes(4, "little"))
         self.assembler.add_to_symbol_table("keypress_buffer_key", self.keypress_buffer_address)
@@ -44,7 +46,10 @@ class GraphicsPatcher:
         self.assembler.add_to_symbol_table("map_vbo_ptr", self.map_vertexdata_address)
         self.assembler.add_to_symbol_table("map_vbosize_ptr", self.map_vertexdatasize_address)
         self.assembler.add_to_symbol_table("wireframe_vbo", self.wireframe_vbo_address)
-        self.assembler.add_to_symbol_table("RIhookContinue", addresses[self.soldat_bridge.executable_hash]["RenderInterface"] + 0x8)
+        self.assembler.add_to_symbol_table("RIhookContinue", addresses[self.soldat_bridge.executable_hash]["ModGraphicsAddress"] + 0x5)
+        self.assembler.add_to_symbol_table(
+            "RF_RenderInterfaceContinue", addresses[self.soldat_bridge.executable_hash]["RF_RenderInterface"] + 0x5
+        )
         self.assembler.add_to_symbol_table("FormKeyPressContinue", addresses[self.soldat_bridge.executable_hash]["FormKeyPress"] + 0x7)
         module_dir = os.path.dirname(os.path.realpath(__file__))
         self.patches_dir = os.path.join(os.path.dirname(module_dir), "patches")
@@ -84,7 +89,7 @@ class GraphicsPatcher:
 
     @property
     def check_patch(self):
-        return self.patcher.check_patch("RenderInterface")
+        return self.patcher.check_patch("ModGraphicsAddress")
 
     def apply_patch(self):
         fp_buffer = self.soldat_bridge.allocate_memory(64, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE)
@@ -93,7 +98,7 @@ class GraphicsPatcher:
         self.assembler.add_to_symbol_table("fp_buffer", fp_buffer)
         self.assembler.add_to_symbol_table("thousand_constant", fp_buffer+48)
         self.__generate_shader_patch_symbols()
-        self.patcher.patch(os.path.join(self.patches_dir, "gui_patch.asm"), "RenderInterface", 3)
+        self.patcher.patch(os.path.join(self.patches_dir, "gui_patch.asm"), "ModGraphicsAddress", 0)
         self.patcher.patch(os.path.join(self.patches_dir, "keypress_hook.asm"), "FormKeyPress", 1)
         self.patcher.patch(os.path.join(self.patches_dir, "init_context_patch.asm"), "GfxInitContext", 5)
         self.patcher.patch(os.path.join(self.patches_dir, "destroy_context_patch.asm"), "GfxDestroyContext", 4)
@@ -149,6 +154,7 @@ class GraphicsPatcher:
         self.assembler.add_to_symbol_table("things_polygons_fbo", self.framebuffer_addresses+40)
         self.assembler.add_to_symbol_table("backpoly_fbo", self.framebuffer_addresses+44)
         self.assembler.add_to_symbol_table("backpoly_wireframe_fbo", self.framebuffer_addresses+48)
+        self.assembler.add_to_symbol_table("mod_graphics_fbo", self.framebuffer_addresses+52)
         self.assembler.add_to_symbol_table("IC_branch_1", 0x00508988)
         self.assembler.add_to_symbol_table("IC_continue", 0x005088E4)
         self.assembler.add_to_symbol_table("DC_continue", 0x00508B21)
