@@ -7,6 +7,18 @@ mov dword ptr ds:[ic_ptr_esp_save], esp
 mov dword ptr ds:[ic_ptr_esi_save], esi
 mov dword ptr ds:[ic_ptr_edi_save], edi
 
+push 0
+push 0x8892
+mov eax, dword ptr ds:[pglBindBuffer]
+mov eax, dword ptr ds:[eax]
+call eax
+push 0
+mov eax, dword ptr ds:[pglUseProgram]
+mov eax, dword ptr ds:[eax]
+call eax
+mov eax, dword ptr ds:[pglFinish]
+mov eax, dword ptr ds:[eax]
+call eax
 mov esi, dword ptr ds:[ptr_framebuffer_count]
 test esi, esi
 jz free_vertex_buffers
