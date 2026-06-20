@@ -125,7 +125,28 @@ class GraphicsManager:
                 print("Max tries reached while reading return value...")
                 exit()
         return tex_addr
+
+    def UpdateTexture(
+            self, 
+            texture_addr: int, 
+            update_position_x: int,
+            update_position_y: int,
+            update_width: int,
+            update_height: int,
+            data_ptr: int
+    ):
+        self.shared_graphics_memory.push_texture(texture_addr)
+        self.shared_graphics_memory.push_texture_update_x(update_position_x)
+        self.shared_graphics_memory.push_texture_update_y(update_position_y)
+        self.shared_graphics_memory.push_texture_update_width(update_width)
+        self.shared_graphics_memory.push_texture_update_height(update_height)
+        self.shared_graphics_memory.push_imageptr(data_ptr.to_bytes(4, "little"))
     
+        self.branch_controller.set_textureupdate_flag()
+        self.branch_controller.set_redirect()
+
+        while self.soldat_bridge.read(self.shared_graphics_memory.get_addr_flagtextureupdate, 1) == b"\x01": pass
+
     def EnableDrawing(self):
         """
         Enables the drawing loop.

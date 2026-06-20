@@ -50,11 +50,11 @@ class ImageNode:
             return
         self.graphics_manager = mod_api.graphics_manager
         self.base_addr = self.soldat_bridge.allocate_memory(0x38, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE)
-        texture = self.graphics_manager.CreateTexture(image_data.pData, image_data.components.to_bytes(4, "little", signed=False),
+        self.texture = self.graphics_manager.CreateTexture(image_data.pData, image_data.components.to_bytes(4, "little", signed=False),
                                                       image_data.width.to_bytes(4, "little", signed=False),
                                                       image_data.height.to_bytes(4, "little", signed=False))
         rect = TGfxRect(0, 1, 0, 1)
-        sprite = TGfxSprite(0, 0, image_data.width, image_data.height, 1, 0, rect, texture, b"\x00\x00\x00\x00")
+        sprite = TGfxSprite(0, 0, image_data.width, image_data.height, 1, 0, rect, self.texture, b"\x00\x00\x00\x00")
         sprite_bytes = sprite.to_bytes()
         sprite_ptr = self.soldat_bridge.allocate_memory(len(sprite_bytes), MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE)
         self.sprite_addr = sprite_ptr
@@ -88,6 +88,23 @@ class ImageNode:
 
     def show(self):
         self.soldat_bridge.write(self.base_addr + 0x24, b"\x01")
+
+    def update(
+            self,
+            update_position_x: int,
+            update_position_y: int,
+            update_width: int,
+            update_height: int,
+            data_ptr: int
+    ):
+        self.graphics_manager.UpdateTexture(
+            int.from_bytes(self.texture, "little"),
+            update_position_x,
+            update_position_y,
+            update_width,
+            update_height,
+            data_ptr
+        )
 
     def set_pos(self, pos: Vector2D):
         self.soldat_bridge.write(self.base_addr + 0x2e, b"\x00")
