@@ -3,7 +3,7 @@ from struct import pack
 import json
 
 SERIAL_FILE_NAME = "sharedmemory.json"
-SHARED_MEMORY_DEFAULT_SIZE = 0x8C
+SHARED_MEMORY_DEFAULT_SIZE = 0xA8
 
 '''
 SharedMemory structure:
@@ -41,6 +41,12 @@ SharedMemory structure:
     0x7C DWORD bool is vbo static
     0x80 DWORD pointer to vbo data
     0x84 DWORD ptr private mod stack
+    0x88 DWORD flow GfxUpdateTexture flag
+    0x8C DWORD ptr texture
+    0x90 DWORD ptr texture update x
+    0x94 DWORD ptr texture update y
+    0x98 DWORD ptr texture update w
+    0x9C DWORD ptr texture update h
 '''
 
 class SharedMemory:
@@ -85,6 +91,7 @@ class SharedMemory:
         self.sm_symbol_table["flag_vbocreate_func"] = self.get_addr_flagcreatevbo
         self.sm_symbol_table["flag_getuniformloc_func"] = self.get_addr_flag_uniform
         self.sm_symbol_table["flag_setuniformf_func"] = self.get_addr_flaguniformf
+        self.sm_symbol_table["flag_update_texture_func"] = self.get_addr_flagtextureupdate
         self.sm_symbol_table["swizzle_count"] = self.get_addr_swizzle_count
         self.sm_symbol_table["ptr_float_swizzle"] = self.get_addr_float_swizzle
         self.sm_symbol_table["uniform_location"] = self.get_addr_uniform_location
@@ -101,6 +108,11 @@ class SharedMemory:
         self.sm_symbol_table["ptr_vbodata"] = self.get_addr_vbodata
         self.sm_symbol_table["ptr_vbostatic"] = self.get_addr_vbostatic
         self.sm_symbol_table["ptr_vbosize"] = self.get_addr_vbosize
+        self.sm_symbol_table["ptr_texture"] = self.get_addr_texture
+        self.sm_symbol_table["ptr_texture_update_width"] = self.get_addr_texture_update_w
+        self.sm_symbol_table["ptr_texture_update_height"] = self.get_addr_texture_update_h
+        self.sm_symbol_table["ptr_texture_update_x"] = self.get_addr_texture_update_x
+        self.sm_symbol_table["ptr_texture_update_y"] = self.get_addr_texture_update_y
         self.sm_symbol_table["ptr_ebx_save"] = self.get_savestate("EBX")
         self.sm_symbol_table["ptr_edx_save"] = self.get_savestate("EDX")
         self.sm_symbol_table["ptr_ebp_save"] = self.get_savestate("EBP")
@@ -213,6 +225,10 @@ class SharedMemory:
         return self.address + 0x30
 
     @property
+    def get_addr_flagtextureupdate(self):
+        return self.address + 0x88
+
+    @property
     def get_addr_returnval(self):
         return self.address + 0x1C
 
@@ -231,6 +247,26 @@ class SharedMemory:
     @property
     def get_addr_imagewidth(self):
         return self.address + 0x2C
+
+    @property
+    def get_addr_texture(self):
+        return self.address + 0x8C
+
+    @property
+    def get_addr_texture_update_x(self):
+        return self.address + 0x90
+
+    @property
+    def get_addr_texture_update_y(self):
+        return self.address + 0x94
+
+    @property
+    def get_addr_texture_update_w(self):
+        return self.address + 0x98
+
+    @property
+    def get_addr_texture_update_h(self):
+        return self.address + 0x9C
 
     @property
     def get_return_value(self):
@@ -303,6 +339,21 @@ class SharedMemory:
 
     def push_vbo_dataptr(self, ptr: bytes):
         self.soldat_bridge.write(self.get_addr_vbodata, ptr)
+
+    def push_texture(self, ptr: int):
+        self.soldat_bridge.write(self.get_addr_texture, ptr.to_bytes(4, "little"))
+
+    def push_texture_update_width(self, width: int):
+        self.soldat_bridge.write(self.get_addr_texture_update_w, width.to_bytes(4, "little"))
+
+    def push_texture_update_height(self, height: int):
+        self.soldat_bridge.write(self.get_addr_texture_update_h, height.to_bytes(4, "little"))
+
+    def push_texture_update_x(self, position_x: int):
+        self.soldat_bridge.write(self.get_addr_texture_update_x, position_x.to_bytes(4, "little"))
+
+    def push_texture_update_y(self, position_y: int):
+        self.soldat_bridge.write(self.get_addr_texture_update_y, position_y.to_bytes(4, "little"))
 
     def as_bytes(self, f, arg=None) -> bytes:
         if arg:

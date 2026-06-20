@@ -53,6 +53,7 @@ addresses = {
         },
     1802620099: { # 1.7.1 https://static.soldat.pl/downloads/soldat171.zip
             "GfxCreateTexture": 0x0050919C,
+            "GfxUpdateTexture": 0x005091EC,
             "CreateShader": 0x00507C8C,
             "pglCreateProgram": 0x005E44D4, # pointer to pointer, deref to call.
             "pglAttachShader": 0x005E4114, # ^

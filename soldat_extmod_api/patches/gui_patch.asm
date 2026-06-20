@@ -139,6 +139,17 @@ set_uniformf:
         call eax
         mov byte ptr ds:[flag_setuniformf_func], 0x0
         jmp exit_restore
+update_texture:
+    push dword ptr ds:[ptr_texture_update_width]
+    push dword ptr ds:[ptr_texture_update_height]
+    push dword ptr ds:[ptr_image]
+    mov eax, dword ptr ds:[ptr_texture]
+    mov ecx, dword ptr ds:[ptr_texture_update_x]
+    mov edx, dword ptr ds:[ptr_texture_update_y]
+    call GfxUpdateTexture
+    mov byte ptr ds:[flag_update_texture_func], 0x0
+    jmp exit_restore
+
 check_moreflags:
     mov al, byte ptr ds:[flag_texture_func]
     cmp al, 0x1
@@ -167,6 +178,10 @@ check_moreflags:
     mov al, byte ptr ds:[flag_setuniformf_func]
     cmp al, 0x1
     je set_uniformf
+    mov al, byte ptr ds:[flag_update_texture_func]
+    cmp al, 0x1
+    je update_texture
+
     mov al, byte ptr ds:[flag_draw_loop]
     cmp al, 0x1
     jne exit_restore
