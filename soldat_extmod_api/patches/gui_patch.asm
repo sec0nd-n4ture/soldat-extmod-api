@@ -325,6 +325,18 @@ check_text_type:
     pop esi
     cmp esi, 0
     jnz check_text_scale
+    mov eax, mod_graphics_fbo
+    mov eax, dword ptr ds:[eax]
+    cmp eax, 0
+    je default_fbo2
+    call GfxTarget
+    push 0
+    xor ecx, ecx
+    xor edx, edx
+    xor eax, eax
+    call RGBAOverload2
+    call GfxClear
+    default_fbo2:
     call GfxBegin
     check_text_scale:
     cmp esi, 0xFFFFFFFF
