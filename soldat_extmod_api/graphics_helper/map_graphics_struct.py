@@ -8,14 +8,7 @@ class TMapGraphics:
             self.api.soldat_bridge.read(self.base_address, 4),
             "little"
         )
-        name_length = int.from_bytes(
-            self.api.soldat_bridge.read(name_ptr - 4, 4),
-            "little"
-        )
-        name = b""
-        for i in range(name_length):
-            name += self.api.soldat_bridge.read(name_ptr+i, 1)
-        return name.decode()
+        return self.api.soldat_bridge.read_delphi_utf8_string(name_ptr)
 
     def get_vertex_buffer(self) -> int:
         return int.from_bytes(

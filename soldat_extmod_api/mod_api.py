@@ -114,23 +114,24 @@ class ModAPI(metaclass=Singleton):
 
         Returns an InterfaceText object.
         '''
-        scale_interface_addr = int.from_bytes(self.soldat_bridge.read(self.addresses["pScale_interface"], 4), "little")
-        scaled_state = bool.from_bytes(self.soldat_bridge.read(scale_interface_addr, 4), "little")
+        scaled_state = self.soldat_bridge.read_value(
+            self.soldat_bridge.read_ptr(self.addresses["pScale_interface"]), "?"
+        )
+
         if not scaled_state:
-            read_ptr = lambda key: int.from_bytes(
-                self.soldat_bridge.read(
-                    int.from_bytes(
-                        self.soldat_bridge.read(self.addresses[key], 4),
-                        "little"
-                    ),
-                    4
-                ),
-                "little"
+            game_width = self.soldat_bridge.read_value(
+                self.soldat_bridge.read_ptr(self.addresses["game_width"]), "I"
             )
-            game_width = read_ptr("game_width")
-            game_height = read_ptr("game_height")
-            screen_width = read_ptr("screen_width")
-            screen_height = read_ptr("screen_height")
+            game_height = self.soldat_bridge.read_value(
+                self.soldat_bridge.read_ptr(self.addresses["game_height"]), "I"
+            )
+            screen_width = self.soldat_bridge.read_value(
+                self.soldat_bridge.read_ptr(self.addresses["screen_width"]), "I"
+            )
+            screen_height = self.soldat_bridge.read_value(
+                self.soldat_bridge.read_ptr(self.addresses["screen_height"]), "I"
+            )
+
             font_scale_factor =  ((screen_width / game_width) + (screen_height / game_height)) / 2
             shadow_scale = Vector2D(
                 shadow_scale.x * (screen_width / game_width),
@@ -394,7 +395,7 @@ class ModAPI(metaclass=Singleton):
     def get_own_id(self) -> int:
         ownid = 0
         while ownid == 0:
-            ownid = int.from_bytes(self.soldat_bridge.read(self.addresses["own_id"], 1), "little")
+            ownid = self.soldat_bridge.read_value(self.addresses["own_id"], "B")
         return ownid
 
     def get_mouse_screen_pos(self) -> Vector2D:
