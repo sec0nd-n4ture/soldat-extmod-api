@@ -169,7 +169,9 @@ addresses = {
             "cam_misc_8": 0x005CC4F5,
             "cam_misc_9": 0x005CC503,
             "own_id": 0x00660800,
-            "ExitToMenu": 0x0054ECCC
+            "ExitToMenu": 0x0054ECCC,
+            "server_ip": 0x005E1764,
+            "server_port": 0x005E1768
         },
     3785736190: { # 1.7.1.1 https://static.soldat.pl/downloads/soldat1711.zip
             "GfxCreateTexture": 0x0050A73C,
