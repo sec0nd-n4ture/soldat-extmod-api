@@ -51,6 +51,10 @@ class Player:
             return self.soldat_bridge.write(self.mouse_world_pos_addr, position)
         self.soldat_bridge.write(self.mouse_world_pos_addr, position.to_bytes())
 
+    def get_name(self) -> str:
+        return self.soldat_bridge.read_delphi_utf8_string(
+            self.soldat_bridge.read_ptr(self.tsprite_object_addr + 0xc14c)
+        )
 
     def get_is_dead(self) -> bool:
         return bool.from_bytes(self.soldat_bridge.read(self.is_dead_addr, 1), "little")
