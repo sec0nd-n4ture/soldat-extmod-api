@@ -191,11 +191,7 @@ class ModAPI(metaclass=Singleton):
         result = self.graphics_manager.CreateFrameBuffer()
         if result != 0:
             fbo_addresses = self.graphics_patcher.framebuffer_addresses
-            fbo_count = int.from_bytes(
-                self.soldat_bridge.read(fbo_addresses, 4),
-                "little",
-                signed=False
-            )
+            fbo_count = self.soldat_bridge.read_value(fbo_addresses, "I")
             self.soldat_bridge.write(fbo_addresses + (fbo_count * 4) + 4, result.to_bytes(4, "little"))
             self.soldat_bridge.write(fbo_addresses, (fbo_count+1).to_bytes(4, "little", signed=False))
         return result
@@ -204,11 +200,7 @@ class ModAPI(metaclass=Singleton):
         result = self.graphics_manager.CreateVertexBuffer(vbo_size, is_static, vbo_data_ptr)
         if result != 0:
             vbo_addresses = self.graphics_patcher.vertexbuffer_addresses
-            vbo_count = int.from_bytes(
-                self.soldat_bridge.read(vbo_addresses, 4),
-                "little",
-                signed=False
-            )
+            vbo_count = self.soldat_bridge.read_value(vbo_addresses, "I")
             self.soldat_bridge.write(vbo_addresses + (vbo_count * 4) + 4, result.to_bytes(4, "little"))
             self.soldat_bridge.write(vbo_addresses, (vbo_count+1).to_bytes(4, "little", signed=False))
         return result
@@ -372,11 +364,9 @@ class ModAPI(metaclass=Singleton):
         return self.soldat_bridge.read(vertexdata_addr, vbo_size)
 
     def get_current_map_vertexdata_size(self) -> int:
-        vbo_size = int.from_bytes(
-            self.soldat_bridge.read(
-                self.graphics_patcher.map_vertexdatasize_address, 4
-            ),
-            "little"
+        vbo_size = self.soldat_bridge.read_value(
+            self.graphics_patcher.map_vertexdatasize_address,
+            "I"
         ) * 20 # x y u v rgba = 20
         return vbo_size
 
@@ -399,7 +389,7 @@ class ModAPI(metaclass=Singleton):
         return ownid
 
     def get_mouse_screen_pos(self) -> Vector2D:
-        return Vector2D(*unpack("ff", self.soldat_bridge.read(self.addr_mouse_screen_pos, 8)))
+        return Vector2D(*self.soldat_bridge.read_value(self.addr_mouse_screen_pos, "ff"))
     
     # ======== Event related methods
 
