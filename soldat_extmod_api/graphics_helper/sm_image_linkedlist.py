@@ -3,6 +3,7 @@ from soldat_extmod_api.game_structs.gfx_structs import ImageData, TGfxRect, TGfx
 from win32.lib.win32con import MEM_COMMIT, MEM_RESERVE, PAGE_READWRITE
 from soldat_extmod_api.graphics_helper.vector_utils import Vector2D, Vector3D
 from soldat_extmod_api.graphics_helper.color import Color
+from soldat_extmod_api.mod_api import ModAPI
 
 '''
 ImageNode struct
@@ -34,7 +35,7 @@ ___________
 
 class ImageNode:
     last_node = None
-    def __init__(self, mod_api = None,
+    def __init__(self, mod_api: ModAPI = None,
                 image_data: ImageData = None, 
                 position: Vector2D = None, 
                 scale: Vector2D = None, 
@@ -80,8 +81,8 @@ class ImageNode:
 
 
     def toggle(self):
-        state = self.soldat_bridge.read(self.base_addr + 0x24, 1)
-        self.soldat_bridge.write(self.base_addr + 0x24, (int.from_bytes(state, "little") ^ 1).to_bytes(1, "little"))
+        state = self.soldat_bridge.read_value(self.base_addr + 0x24, "B")
+        self.soldat_bridge.write(self.base_addr + 0x24, (state ^ 1).to_bytes(1, "little"))
 
     def hide(self):
         self.soldat_bridge.write(self.base_addr + 0x24, b"\x00")
@@ -126,12 +127,10 @@ class ImageNode:
         self.soldat_bridge.write(self.base_addr + 0x2a, addr.to_bytes(4, "little"))
 
     def __get_next(self) -> int:
-        raw = self.soldat_bridge.read(self.base_addr + 0x26, 4)
-        return int.from_bytes(raw, "little")
+        return self.soldat_bridge.read_value(self.base_addr + 0x26, "I")
     
     def __get_previous(self) -> int:
-        raw = self.soldat_bridge.read(self.base_addr + 0x2a, 4)
-        return int.from_bytes(raw, "little")
+        return self.soldat_bridge.read_value(self.base_addr + 0x2a, "I")
     
     def set_pointer_pos(self, x_addr: int, y_addr: int):
         self.hide()
@@ -145,20 +144,20 @@ class ImageNode:
 
     @property
     def get_pos(self) -> Vector2D:
-        return Vector2D(*unpack("ff", self.soldat_bridge.read(self.base_addr + 0x4, 8)))
+        return Vector2D(*self.soldat_bridge.read_value(self.base_addr + 0x4, "ff"))
 
     @property
     def get_dimensions(self) -> Vector2D:
         if not self.dimensions:
-            self.dimensions = Vector2D(*unpack("II", self.soldat_bridge.read(self.sprite_addr + 0x8, 8)))
+            self.dimensions = Vector2D(*self.soldat_bridge.read_value(self.sprite_addr + 0x8, "II"))
         return self.dimensions
     
     @property
     def get_scale(self) -> Vector2D:
-        return Vector2D(*unpack("ff", self.soldat_bridge.read(self.base_addr + 0x0C, 8)))
+        return Vector2D(*self.soldat_bridge.read_value(self.base_addr + 0x0C, "ff"))
     
     def get_rect(self) -> TGfxRect:
-        return TGfxRect(*unpack("ffff", self.soldat_bridge.read(self.sprite_addr + 24, 16)))
+        return TGfxRect(*self.soldat_bridge.read_value(self.sprite_addr + 24, "ffff"))
     
     def set_rect(self, rect: TGfxRect):
         self.soldat_bridge.write(self.sprite_addr + 24, rect.to_bytes())
