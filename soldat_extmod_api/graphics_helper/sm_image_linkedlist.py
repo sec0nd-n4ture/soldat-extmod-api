@@ -3,7 +3,6 @@ from soldat_extmod_api.game_structs.gfx_structs import ImageData, TGfxRect, TGfx
 from win32.lib.win32con import MEM_COMMIT, MEM_RESERVE, PAGE_READWRITE
 from soldat_extmod_api.graphics_helper.vector_utils import Vector2D, Vector3D
 from soldat_extmod_api.graphics_helper.color import Color
-from soldat_extmod_api.mod_api import ModAPI
 
 '''
 ImageNode struct
@@ -35,7 +34,7 @@ ___________
 
 class ImageNode:
     last_node = None
-    def __init__(self, mod_api: ModAPI = None,
+    def __init__(self, mod_api = None,
                 image_data: ImageData = None, 
                 position: Vector2D = None, 
                 scale: Vector2D = None, 
