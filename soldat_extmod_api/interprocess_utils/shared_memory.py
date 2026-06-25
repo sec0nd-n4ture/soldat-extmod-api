@@ -350,10 +350,16 @@ class SharedMemory:
         self.soldat_bridge.write(self.get_addr_texture_update_h, height.to_bytes(4, "little"))
 
     def push_texture_update_x(self, position_x: int):
-        self.soldat_bridge.write(self.get_addr_texture_update_x, position_x.to_bytes(4, "little"))
+        self.soldat_bridge.write(
+            self.get_addr_texture_update_x, 
+            position_x.to_bytes(4, "little", signed=True)
+        )
 
     def push_texture_update_y(self, position_y: int):
-        self.soldat_bridge.write(self.get_addr_texture_update_y, position_y.to_bytes(4, "little"))
+        self.soldat_bridge.write(
+            self.get_addr_texture_update_y, 
+            position_y.to_bytes(4, "little", signed=True)
+        )
 
     def as_bytes(self, f, arg=None) -> bytes:
         if arg:
